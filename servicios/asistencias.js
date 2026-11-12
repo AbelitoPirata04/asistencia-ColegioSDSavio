@@ -65,7 +65,7 @@ async function obtener(desde, hasta) {
            r.ruta_fotografia, r.ruta_foto_salida,
            TIMESTAMPDIFF(MINUTE, r.fecha_hora_entrada, r.fecha_hora_salida) AS minutos,
            DATE_FORMAT(r.fecha_hora_entrada, '%Y-%m-%d') AS dia,
-           p.nombre_completo, p.cedula, p.rol, p.id_nivel, n.nombre AS nivel, ${DETALLE} AS detalle
+           p.nombre_completo, p.cedula, p.rol, p.foto_perfil, p.id_nivel, n.nombre AS nivel, ${DETALLE} AS detalle
       FROM registros_asistencia r
       JOIN personal p ON p.id_personal = r.id_personal
       ${UNIONES}
@@ -74,7 +74,7 @@ async function obtener(desde, hasta) {
 
   // Personas activas y desde cuándo se les cuentan faltas (desde que entraron al sistema o su primer registro)
   const [personas] = await pool.query(`
-    SELECT p.id_personal, p.nombre_completo, p.cedula, p.rol, p.id_nivel, n.nombre AS nivel, ${DETALLE} AS detalle,
+    SELECT p.id_personal, p.nombre_completo, p.cedula, p.rol, p.foto_perfil, p.id_nivel, n.nombre AS nivel, ${DETALLE} AS detalle,
            DATE_FORMAT(LEAST(DATE(p.fecha_creacion),
              COALESCE((SELECT DATE(MIN(r.fecha_hora_entrada)) FROM registros_asistencia r WHERE r.id_personal = p.id_personal),
                       DATE(p.fecha_creacion))), '%Y-%m-%d') AS cuenta_desde

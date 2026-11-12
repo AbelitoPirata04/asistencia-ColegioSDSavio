@@ -137,7 +137,7 @@
     eventos.sort((a, b) => new Date(b.f) - new Date(a.f));
     $('#pases').innerHTML = eventos.length ? eventos.slice(0, 8).map((e) => `
       <li class="pase">
-        ${e.foto ? `<img src="${esc(e.foto)}" alt="" loading="lazy">` : `<span class="sigla">${esc(siglas(e.x.nombre_completo))}</span>`}
+        ${(e.foto || e.x.foto_perfil) ? `<img src="${esc(e.foto || e.x.foto_perfil)}" alt="" loading="lazy">` : `<span class="sigla">${esc(siglas(e.x.nombre_completo))}</span>`}
         <div class="pase__quien">
           <a href="/asistencias/persona/${e.x.id_personal}">${esc(e.x.nombre_completo)}</a>
           <small>${e.tipo === 'llegada' ? 'Llegó' : 'Salió'} con ${metodo(e.m)}</small>

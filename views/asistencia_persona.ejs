@@ -9,7 +9,7 @@
   <!-- Persona + mes -->
   <section class="historial__cabeza">
     <div class="miembro miembro--grande">
-      <span class="sigla"><%= sig %></span>
+      <% if (m.foto_perfil) { %><img class="sigla sigla--foto" src="<%= m.foto_perfil %>" alt=""><% } else { %><span class="sigla"><%= sig %></span><% } %>
       <div>
         <strong><%= m.nombre_completo %></strong>
         <small><%= cargo %><%= m.nombre_jornada ? ' · ' + m.nombre_jornada + ' (entrada ' + m.hora_entrada + ')' : '' %></small>

@@ -60,14 +60,14 @@ router.get('/admin/api/eventos-recientes', async (req, res) => {
       SELECT r.id_asistencia, r.id_personal, r.estado_puntualidad,
              r.fecha_hora_entrada, r.metodo_ingreso, r.ruta_fotografia,
              r.fecha_hora_salida, r.metodo_salida, r.ruta_foto_salida,
-             p.nombre_completo, p.rol
+             p.nombre_completo, p.rol, p.foto_perfil
         FROM registros_asistencia r JOIN personal p ON p.id_personal = r.id_personal
        WHERE r.fecha_hora_entrada >= NOW() - INTERVAL 10 MINUTE
           OR r.fecha_hora_salida >= NOW() - INTERVAL 10 MINUTE`);
     const eventos = [];
     const haceRato = Date.now() - 10 * 60 * 1000;
     f.forEach((r) => {
-      const base = { id_asistencia: r.id_asistencia, id_personal: r.id_personal, nombre: r.nombre_completo, rol: r.rol };
+      const base = { id_asistencia: r.id_asistencia, id_personal: r.id_personal, nombre: r.nombre_completo, rol: r.rol, foto_perfil: r.foto_perfil };
       if (r.metodo_ingreso !== 'manual' && new Date(r.fecha_hora_entrada).getTime() >= haceRato) {
         eventos.push({ ...base, tipo: 'entrada', fecha: r.fecha_hora_entrada, metodo: r.metodo_ingreso,
           foto: r.ruta_fotografia, retardo: r.estado_puntualidad === 'retardo' });
@@ -651,7 +651,7 @@ router.get('/novedades', comunes, (req, res) =>
 router.get('/admin/api/novedades', async (req, res) => {
   try {
     const [novedades] = await pool.query(`
-      SELECT nv.id_novedad, nv.id_personal, nv.tipo, nv.observacion, p.nombre_completo, p.rol,
+      SELECT nv.id_novedad, nv.id_personal, nv.tipo, nv.observacion, p.nombre_completo, p.rol, p.foto_perfil,
              DATE_FORMAT(nv.fecha_inicio, '%Y-%m-%d') AS desde, DATE_FORMAT(nv.fecha_fin, '%Y-%m-%d') AS hasta
         FROM novedades nv JOIN personal p ON p.id_personal = nv.id_personal
        ORDER BY nv.fecha_inicio DESC`);

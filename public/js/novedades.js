@@ -56,7 +56,7 @@
       const [txt, cls] = estadoNovedad(n);
       const dias = habiles(n.desde, n.hasta);
       return `<tr>
-        <td><div class="miembro"><span class="sigla">${esc(siglas(n.nombre_completo))}</span>
+        <td><div class="miembro">${n.foto_perfil ? `<img class="sigla sigla--foto" src="${esc(n.foto_perfil)}" alt="" loading="lazy">` : `<span class="sigla">${esc(siglas(n.nombre_completo))}</span>`}
           <div><a class="miembro__nombre" href="/asistencias/persona/${n.id_personal}?dia=${n.desde}">${esc(n.nombre_completo)}</a>
           <small>${n.rol === 'directivo' ? 'Directivo' : 'Docente'}</small></div></div></td>
         <td><span class="tipo-novedad tipo-novedad--${n.tipo}">${TIPOS[n.tipo]}</span></td>

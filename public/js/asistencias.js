@@ -73,7 +73,7 @@
 
   const filaRegistro = (r) => `
     <tr class="fila-clic" data-persona="${r.id_personal}" title="Ver el historial de ${esc(r.nombre_completo)}">
-      <td><div class="miembro"><span class="sigla">${esc(siglas(r.nombre_completo))}</span>
+      <td><div class="miembro">${r.foto_perfil ? `<img class="sigla sigla--foto" src="${esc(r.foto_perfil)}" alt="" loading="lazy">` : `<span class="sigla">${esc(siglas(r.nombre_completo))}</span>`}
         <div><a class="miembro__nombre" href="/asistencias/persona/${r.id_personal}?dia=${datos.desde}">${esc(r.nombre_completo)}</a>
         <small>${esc(cargo(r))}</small></div></div></td>
       <td class="col-fecha">${diaCorto(r.dia)}</td>
@@ -119,7 +119,7 @@
     const tarjeta = (p) => `
       <div class="ausente${p.novedad ? ' ausente--justificado' : ''}">
         <a class="ausente__persona" href="/asistencias/persona/${p.id_personal}?dia=${datos.desde}">
-          <span class="sigla">${esc(siglas(p.nombre_completo))}</span>
+          ${p.foto_perfil ? `<img class="sigla sigla--foto" src="${esc(p.foto_perfil)}" alt="" loading="lazy">` : `<span class="sigla">${esc(siglas(p.nombre_completo))}</span>`}
           <span><strong>${esc(p.nombre_completo)}</strong><small>${esc(cargo(p))}</small></span>
         </a>
         ${p.novedad

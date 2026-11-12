@@ -210,7 +210,7 @@
     aviso.href = `/asistencias/persona/${ev.id_personal}`;
     aviso.className = `aviso-pase aviso-pase--${entrada ? (ev.retardo ? 'retardo' : 'entrada') : 'salida'}`;
     aviso.innerHTML = `
-      ${ev.foto ? `<img src="${escapar(ev.foto)}" alt="">` : `<span class="sigla">${escapar(siglasDe(ev.nombre))}</span>`}
+      ${(ev.foto || ev.foto_perfil) ? `<img src="${escapar(ev.foto || ev.foto_perfil)}" alt="">` : `<span class="sigla">${escapar(siglasDe(ev.nombre))}</span>`}
       <span class="aviso-pase__texto">
         <small>${titulo} · ${rol}</small>
         <strong>${escapar(ev.nombre)}</strong>
