@@ -1,0 +1,115 @@
+<%- include('partials/cabecera') %>
+
+<!-- 1. Periodo y descargas -->
+<section class="barra-periodo">
+  <div class="barra-periodo__fechas">
+    <div class="segmentos" id="rapidos" role="group" aria-label="Día">
+      <button type="button" data-rango="hoy" class="on">Hoy</button>
+      <button type="button" data-rango="ayer">Ayer</button>
+    </div>
+    <div class="fechas">
+      <label>Día<input type="date" id="dia"></label>
+    </div>
+    <span class="en-vivo" id="enVivo" hidden><i></i>En vivo</span>
+  </div>
+  <div class="barra-periodo__descargas">
+    <button type="button" class="btn" id="btnManual">Registro manual</button>
+    <button type="button" class="btn" data-descargar="xlsx">Descargar Excel</button>
+    <button type="button" class="btn btn--primario" data-descargar="pdf">Descargar PDF</button>
+  </div>
+</section>
+
+<!-- Aviso de día sin clase (festivo, vacaciones...) -->
+<div class="aviso-dia" id="sinClase" hidden></div>
+
+<!-- 2. Resumen -->
+<section class="franja" id="resumen" aria-live="polite"></section>
+
+<!-- 3. Registros -->
+<section class="tarjeta">
+  <div class="tarjeta__herramientas">
+    <div class="buscar"><input id="q" type="search" placeholder="Buscar por nombre, cédula, materia o grado" aria-label="Buscar"></div>
+    <select id="filtroNivel" class="filtro-nivel" aria-label="Filtrar por nivel">
+      <option value="">Todos los niveles</option>
+      <option value="directivos">Directivos</option>
+      <% niveles.forEach(function (n) { %><option value="<%= n.id_nivel %>"><%= n.nombre %></option><% }) %>
+    </select>
+    <div class="segmentos" id="filtroEstado" role="group" aria-label="Filtrar por estado">
+      <button type="button" data-estado="" class="on">Todos</button>
+      <button type="button" data-estado="puntual">Puntuales</button>
+      <button type="button" data-estado="retardo">Retardos</button>
+      <button type="button" data-estado="sin_salida">Sin salida</button>
+    </div>
+    <span class="tarjeta__cuenta" id="cuenta"></span>
+  </div>
+  <div class="tabla-desliza">
+    <table class="tabla tabla--asistencia" id="tabla">
+      <thead>
+        <tr>
+          <th>Miembro</th><th class="col-fecha">Fecha</th><th>Llegada</th><th>Salida</th>
+          <th>Tiempo</th><th>Estado</th><th>Fotos</th><th><span class="sr">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody id="filas"><tr><td colspan="8" class="vacio">Cargando registros…</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 4. Quién no ha llegado (solo cuando se ve un día) -->
+<section class="tarjeta" id="cajaAusentes" hidden>
+  <header class="tarjeta__cabeza">
+    <h2 id="tituloAusentes"></h2>
+    <span class="ayuda">Docentes y directivos activos sin registro ese día</span>
+  </header>
+  <div class="ausentes" id="ausentes"></div>
+</section>
+
+<p class="aviso aviso--ok aviso--flotante" id="avisoAsis" role="status" hidden></p>
+
+<!-- Ventana de descarga: aquí se elige el periodo del reporte -->
+<dialog class="descarga" id="dlgDescarga" aria-labelledby="descargaTitulo">
+  <form method="dialog" class="descarga__caja" id="formDescarga">
+    <h2 id="descargaTitulo">Descargar reporte</h2>
+    <p class="ayuda">¿De qué periodo quiere el reporte?</p>
+
+    <div class="periodos" role="radiogroup" aria-label="Periodo del reporte">
+      <label class="opcion"><input type="radio" name="periodo" value="dia" checked>
+        <span><strong>El día</strong><small id="txtDia"></small></span></label>
+      <label class="opcion"><input type="radio" name="periodo" value="semana">
+        <span><strong>Esta semana</strong><small id="txtSemana"></small></span></label>
+      <label class="opcion"><input type="radio" name="periodo" value="mes">
+        <span><strong>Este mes</strong><small id="txtMes"></small></span></label>
+      <label class="opcion"><input type="radio" name="periodo" value="rango">
+        <span><strong>Otro periodo</strong><small>Elija desde y hasta qué día</small></span></label>
+    </div>
+
+    <div class="fechas fechas--rango" id="rangoFechas" hidden>
+      <label>Desde<input type="date" id="rDesde"></label>
+      <label>Hasta<input type="date" id="rHasta"></label>
+    </div>
+
+    <label class="chequeo" id="usarFiltros" hidden>
+      <input type="checkbox" id="chkFiltros" checked>
+      <span>Solo lo que muestran los filtros: <b id="txtFiltros"></b></span>
+    </label>
+    <p class="aviso aviso--error" id="errDescarga" hidden></p>
+
+    <div class="descarga__botones">
+      <button value="cancelar" class="btn" formnovalidate>Cancelar</button>
+      <button type="button" class="btn btn--primario" id="btnBajar">Descargar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Visor de fotos -->
+<dialog class="visor" id="visor" aria-labelledby="visorNombre">
+  <div class="visor__caja">
+    <header class="visor__cabeza">
+      <div><h2 id="visorNombre"></h2><p class="ayuda" id="visorFecha"></p></div>
+      <button type="button" class="btn" id="visorCerrar">Cerrar</button>
+    </header>
+    <div class="visor__fotos" id="visorFotos"></div>
+  </div>
+</dialog>
+
+<%- include('partials/pie', { script: 'asistencias.js' }) %>

@@ -1,0 +1,115 @@
+<%- include('partials/cabecera') %>
+<% const e = m || {}; const directivo = e.rol === 'directivo'; %>
+
+<form class="registro" id="formMiembro" data-id="<%= m ? m.id_personal : '' %>" novalidate>
+
+  <!-- Datos personales: ocupa todo el ancho -->
+  <fieldset class="seccion seccion--ancha">
+    <legend><img class="ico" src="/img/iconos/hoja-vida.png" alt="">Datos personales</legend>
+    <div class="datos-con-foto">
+    <!-- Foto para el carnet: se recorta sola y se sube al guardar -->
+    <div class="foto-campo">
+      <button type="button" class="foto-campo__marco" id="fotoElegir" aria-label="Elegir foto para el carnet">
+        <img id="fotoVista" src="<%= e.foto_perfil || '' %>" alt="" <%= e.foto_perfil ? '' : 'hidden' %>>
+        <span id="fotoVacia" <%= e.foto_perfil ? 'hidden' : '' %>>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="3.6"/><path d="M5 20c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2"/></svg>
+          Agregar foto
+        </span>
+      </button>
+      <button type="button" class="enlace-chico" id="fotoQuitar" <%= e.foto_perfil ? '' : 'hidden' %>>Quitar foto</button>
+      <small class="ayuda">De frente y con buena luz.<br>Se recorta sola para el carnet.</small>
+      <input type="file" id="fotoArchivo" accept="image/*" hidden>
+    </div>
+    <div class="campos campos--3">
+      <label class="campo--2">Nombre completo
+        <input name="nombre_completo" value="<%= e.nombre_completo || '' %>" required maxlength="150" autocomplete="off" placeholder="Nombres y apellidos">
+      </label>
+      <label>Cédula
+        <input name="cedula" value="<%= e.cedula || '' %>" required maxlength="15" inputmode="numeric" autocomplete="off">
+      </label>
+      <label>Correo institucional
+        <input name="correo" type="email" value="<%= e.correo || '' %>" required maxlength="120" autocomplete="off" placeholder="nombre@savio.edu.co">
+      </label>
+      <label>Teléfono
+        <input name="telefono" type="tel" value="<%= e.telefono || '' %>" required maxlength="20" inputmode="tel" autocomplete="off" placeholder="Ej. 300 123 4567">
+      </label>
+      <label>Dirección
+        <input name="direccion" value="<%= e.direccion || '' %>" required maxlength="150" autocomplete="off" placeholder="Barrio, calle y número">
+      </label>
+    </div>
+    </div>
+  </fieldset>
+
+  <!-- Rol y nivel -->
+  <fieldset class="seccion">
+    <legend><img class="ico" src="/img/iconos/docente.png" alt="">Rol en el colegio</legend>
+    <div class="opciones-rol" role="radiogroup" aria-label="Rol">
+      <label class="opcion">
+        <input type="radio" name="rol" value="docente" <%= !directivo ? 'checked' : '' %>>
+        <span><strong>Docente</strong><small>Dicta clases en preescolar, primaria o bachillerato.</small></span>
+      </label>
+      <label class="opcion">
+        <input type="radio" name="rol" value="directivo" <%= directivo ? 'checked' : '' %>>
+        <span><strong>Directivo</strong><small>Rectoría, coordinación o secretaría.</small></span>
+      </label>
+    </div>
+
+    <div class="campos campos--2" id="camposDocente" <%= directivo ? 'hidden' : '' %>>
+      <label>Nivel
+        <select name="id_nivel" id="selNivel">
+          <option value="">Seleccione…</option>
+          <% niveles.forEach(function (n) { %>
+            <option value="<%= n.id_nivel %>" data-por-asignatura="<%= n.por_asignatura %>" <%= String(e.id_nivel) === String(n.id_nivel) ? 'selected' : '' %>><%= n.nombre %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label id="campoGrado" hidden>Grado a cargo
+        <select name="id_grado" id="selGrado"></select>
+      </label>
+      <label id="campoAsignatura" hidden>Asignatura
+        <select name="id_asignatura" id="selAsignatura">
+          <option value="">Seleccione…</option>
+          <% asignaturas.forEach(function (a) { %>
+            <option value="<%= a.id_asignatura %>" <%= String(e.id_asignatura) === String(a.id_asignatura) ? 'selected' : '' %>><%= a.nombre %></option>
+          <% }) %>
+        </select>
+      </label>
+    </div>
+
+    <div class="campos" id="camposDirectivo" <%= directivo ? '' : 'hidden' %>>
+      <label>Cargo
+        <input name="cargo_asignatura" value="<%= directivo ? (e.cargo_asignatura || '') : '' %>" maxlength="100" autocomplete="off" placeholder="Ej. Rector, Coordinador académico, Secretaria">
+      </label>
+    </div>
+  </fieldset>
+
+  <!-- Jornada -->
+  <fieldset class="seccion">
+    <legend><img class="ico" src="/img/iconos/historial.png" alt="">Jornada</legend>
+    <label>Jornada a la que llega
+      <select name="id_horario">
+        <option value="">Sin jornada</option>
+        <% horarios.forEach(function (h) { %>
+          <option value="<%= h.id_horario %>" <%= String(e.id_horario) === String(h.id_horario) ? 'selected' : '' %>><%= h.nombre_jornada %> · entrada <%= h.entrada %></option>
+        <% }) %>
+      </select>
+    </label>
+    <p class="ayuda">Sirve para que el registro diga si llegó puntual o con retardo.</p>  </fieldset>
+
+  <p class="aviso aviso--error registro__ancho" id="error" role="alert" hidden></p>
+
+  <div class="registro__acciones registro__ancho">
+    <% if (m) { const aFicha = locals.origen === 'ficha'; %>
+      <a class="btn" href="<%= aFicha ? '/personal/' + m.id_personal : '/personal' %>">Cancelar</a>
+      <%# Guardar siempre lleva a la ficha, para ver los datos ya actualizados %>
+      <button type="submit" class="btn btn--primario" data-destino="ficha">Guardar cambios</button>
+    <% } else { %>
+      <a class="btn" href="/personal">Cancelar</a>
+      <button type="submit" class="btn" data-destino="lista">Guardar</button>
+      <button type="submit" class="btn btn--primario" data-destino="ficha">Guardar y registrar huella</button>
+    <% } %>
+  </div>
+</form>
+
+<script id="datosGrados" type="application/json"><%- JSON.stringify({ grados: grados, seleccionado: e.id_grado || null }).replace(/</g, '\\u003c') %></script>
+<%- include('partials/pie', { script: 'personal_form.js' }) %>

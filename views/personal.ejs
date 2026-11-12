@@ -1,0 +1,31 @@
+<%- include('partials/cabecera') %>
+
+<section class="herramientas">
+  <div class="buscar"><input id="q" type="search" placeholder="Buscar por nombre, cédula, materia o grado" aria-label="Buscar"></div>
+  <div class="segmentos" id="filtroRol" role="group" aria-label="Filtrar por rol">
+    <button type="button" data-rol="" class="on">Todos</button>
+    <button type="button" data-rol="docente">Docentes</button>
+    <button type="button" data-rol="directivo">Directivos</button>
+  </div>
+  <select id="filtroNivel" class="filtro-nivel" aria-label="Filtrar por nivel">
+    <option value="">Todos los niveles</option>
+    <% niveles.forEach(function (n) { %><option value="<%= n.id_nivel %>"><%= n.nombre %></option><% }) %>
+  </select>
+  <label class="chequeo"><input type="checkbox" id="verInactivos">Mostrar dados de baja</label>
+  <a class="btn btn--primario" href="/personal/nuevo">Nuevo miembro</a>
+</section>
+
+<p class="aviso aviso--ok" id="avisoLista" role="status" hidden>Los datos se guardaron correctamente.</p>
+<p class="pendientes" id="pendientes" aria-live="polite" hidden></p>
+
+<div class="tabla-caja">
+  <table class="tabla">
+    <thead>
+      <tr><th>Miembro</th><th>Cédula</th><th>Rol y cargo</th><th>Jornada</th><th>Huella</th><th>Tarjeta</th><th>Estado</th><th><span class="sr">Acciones</span></th></tr>
+    </thead>
+    <tbody id="filas"><tr><td colspan="8" class="vacio">Cargando miembros…</td></tr></tbody>
+  </table>
+  <div class="tabla-pie" id="resumen"></div>
+</div>
+
+<%- include('partials/pie', { script: 'personal.js' }) %>

@@ -1,0 +1,17 @@
+# Librerías de Node (se reinstalan con "npm install")
+node_modules/
+
+# Claves y configuración local
+.env
+arduino/**/secretos.h
+
+# Fotos tomadas por el equipo y fotos de perfil (datos personales: no van al repositorio)
+uploads/
+
+# Archivos del sistema y del editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+npm-debug.log*
+.vscode/

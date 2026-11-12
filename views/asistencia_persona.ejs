@@ -1,0 +1,65 @@
+<%- include('partials/cabecera') %>
+<%
+  const sig = m.nombre_completo.split(' ').filter(Boolean).slice(0, 2).map(function (p) { return p[0]; }).join('').toUpperCase();
+  const cargo = [m.rol === 'directivo' ? 'Directivo' : m.nivel, m.detalle].filter(Boolean).join(' · ');
+%>
+
+<div class="historial" id="historial" data-id="<%= m.id_personal %>" data-mes="<%= mesInicial %>">
+
+  <!-- Persona + mes -->
+  <section class="historial__cabeza">
+    <div class="miembro miembro--grande">
+      <span class="sigla"><%= sig %></span>
+      <div>
+        <strong><%= m.nombre_completo %></strong>
+        <small><%= cargo %><%= m.nombre_jornada ? ' · ' + m.nombre_jornada + ' (entrada ' + m.hora_entrada + ')' : '' %></small>
+      </div>
+    </div>
+    <div class="mes-nav" role="group" aria-label="Cambiar de mes">
+      <button type="button" class="btn" id="mesAnterior" aria-label="Mes anterior">‹</button>
+      <strong id="mesTitulo"></strong>
+      <button type="button" class="btn" id="mesSiguiente" aria-label="Mes siguiente">›</button>
+    </div>
+    <div class="historial__acciones">
+      <a class="btn" href="/personal/<%= m.id_personal %>">Ver ficha</a>
+      <button type="button" class="btn" id="btnNovedad">Registrar novedad</button>
+      <a class="btn btn--primario" id="btnPdfMes" href="#" download>Descargar PDF del mes</a>
+    </div>
+  </section>
+
+  <!-- Resumen del mes -->
+  <section class="franja" id="resumenMes" aria-live="polite"></section>
+
+  <div class="historial__cuerpo">
+    <!-- Calendario del mes -->
+    <aside class="tarjeta calendario">
+      <div class="calendario__semana"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="calendario__dias" id="calendario"></div>
+      <ul class="leyenda">
+        <li><i class="dia--puntual"></i>Puntual</li>
+        <li><i class="dia--retardo"></i>Retardo</li>
+        <li><i class="dia--falta"></i>No asistió</li>
+        <li><i class="dia--justificado"></i>Justificado</li>
+        <li><i class="dia--sinclase"></i>Sin clase</li>
+      </ul>
+    </aside>
+
+    <!-- Día por día -->
+    <section class="tarjeta">
+      <div class="dias" id="dias"><p class="vacio">Cargando…</p></div>
+    </section>
+  </div>
+</div>
+
+<!-- Visor de fotos -->
+<dialog class="visor" id="visor" aria-labelledby="visorNombre">
+  <div class="visor__caja">
+    <header class="visor__cabeza">
+      <div><h2 id="visorNombre"></h2><p class="ayuda" id="visorFecha"></p></div>
+      <button type="button" class="btn" id="visorCerrar">Cerrar</button>
+    </header>
+    <div class="visor__fotos" id="visorFotos"></div>
+  </div>
+</dialog>
+
+<%- include('partials/pie', { script: 'asistencia_persona.js' }) %>

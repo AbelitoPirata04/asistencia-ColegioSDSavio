@@ -1,0 +1,42 @@
+<%- include('partials/cabecera') %>
+
+<section class="barra-periodo">
+  <p class="ayuda barra-periodo__texto">Los permisos justifican las ausencias y los días sin clase no cuentan como faltas, en la vista de asistencias y en los reportes.</p>
+  <div class="barra-periodo__descargas">
+    <button type="button" class="btn" id="btnDia">Agregar día sin clase</button>
+    <button type="button" class="btn btn--primario" id="btnNovedad">Registrar novedad</button>
+  </div>
+</section>
+
+<!-- Permisos y novedades -->
+<section class="tarjeta">
+  <header class="tarjeta__cabeza tarjeta__cabeza--herramientas">
+    <h2><img class="ico ico--chico" src="/img/iconos/permiso.png" alt="">Permisos y novedades</h2>
+    <div class="segmentos" id="filtroNov" role="group" aria-label="Mostrar">
+      <button type="button" data-ver="actuales" class="on">Vigentes y próximas</button>
+      <button type="button" data-ver="pasadas">Terminadas</button>
+      <button type="button" data-ver="todas">Todas</button>
+    </div>
+    <div class="buscar"><input id="qNov" type="search" placeholder="Buscar persona o tipo" aria-label="Buscar"></div>
+  </header>
+  <div class="tabla-desliza">
+    <table class="tabla tabla--asistencia">
+      <thead><tr><th>Persona</th><th>Tipo</th><th>Fechas</th><th>Observación</th><th>Estado</th><th><span class="sr">Acciones</span></th></tr></thead>
+      <tbody id="filasNov"><tr><td colspan="6" class="vacio">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Días sin clase -->
+<section class="tarjeta">
+  <header class="tarjeta__cabeza tarjeta__cabeza--herramientas">
+    <h2><img class="ico ico--chico" src="/img/iconos/calendario.png" alt="">Días sin clase</h2>
+    <select id="anio" class="filtro-nivel" aria-label="Año"></select>
+    <button type="button" class="btn" id="btnFestivos"></button>
+  </header>
+  <div class="dias-sin-clase" id="listaDias"><p class="vacio">Cargando…</p></div>
+</section>
+
+<p class="aviso aviso--ok aviso--flotante" id="avisoNov" role="status" hidden></p>
+
+<%- include('partials/pie', { script: 'novedades.js' }) %>

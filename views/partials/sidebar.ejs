@@ -1,0 +1,35 @@
+<%
+  // [ruta, id, texto, trazo del icono]
+  const items = [
+    ['/', 'inicio', 'Inicio', 'M4 11 12 4l8 7v9h-5v-6H9v6H4z'],
+    ['/asistencias', 'asistencias', 'Asistencias', 'M6 4h12v16H6z M9 9h6 M9 13h6 M9 17h3'],
+    ['/personal', 'personal', 'Docentes y Directivos', 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 19c0-3 2.7-5 6-5s6 2 6 5 M16 6.5a2.5 2.5 0 0 1 0 5 M17 14.3c2.2.4 4 2 4 4.7'],
+    ['/novedades', 'novedades', 'Novedades y calendario', 'M4 6h16v14H4z M4 10h16 M8 3v4 M16 3v4 M8 14h3 M8 17h6'],
+    ['/hardware', 'hardware', 'Hardware ESP32-S3', 'M7 7h10v10H7z M10 10h4v4h-4z M9 3v4 M15 3v4 M9 17v4 M15 17v4 M3 9h4 M3 15h4 M17 9h4 M17 15h4']
+  ];
+%>
+<aside class="side" id="side">
+  <div class="side__marca">
+    <div class="placa"><img src="/img/logo.jpg" alt="Escudo del Colegio Santo Domingo Savio"></div>
+  </div>
+  <nav aria-label="Principal">
+    <% items.forEach(function (it) { %>
+      <a href="<%= it[0] %>" class="<%= activo === it[1] ? 'activo' : '' %>" <%- activo === it[1] ? 'aria-current="page"' : '' %>>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<%= it[3] %>"/></svg>
+        <span><%= it[2] %></span>
+      </a>
+    <% }) %>
+  </nav>
+  <button type="button" class="side__fijar" id="btnFijar" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 7l5 5-5 5"/></svg>
+    <span>Mantener abierto</span>
+  </button>
+  <div class="side__pie">
+    <svg viewBox="0 0 260 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 22C40 4 80 4 130 20S220 36 260 14V40H0Z" fill="#5E0000"/>
+      <path d="M0 22C40 4 80 4 130 20S220 36 260 14" fill="none" stroke="#FFE23D" stroke-width="3"/>
+    </svg>
+    <p>Formando con<br>Ciencia, Valores y<br>Autonomía</p>
+  </div>
+</aside>
+<div class="velo" id="velo" hidden></div>

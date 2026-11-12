@@ -1,0 +1,119 @@
+<%- include('partials/cabecera') %>
+
+<!-- Portada: fotos del colegio que pasan solas (también con flechas, puntos, teclado o deslizando) -->
+<section class="portada" id="portada" aria-roledescription="carrusel" aria-label="Fotos del colegio">
+  <div class="portada__fotos">
+    <% portada.forEach(function (s, i) { %>
+      <figure class="portada__foto<%= i === 0 ? ' activa' : '' %>" aria-hidden="<%= i === 0 ? 'false' : 'true' %>">
+        <img src="<%= s.foto %>" alt="<%= s.titulo %>" <%- i > 1 ? 'loading="lazy"' : '' %>>
+      </figure>
+    <% }) %>
+  </div>
+  <div class="portada__texto" aria-live="polite">
+    <span class="portada__colegio">Instituto Mixto Santo Domingo Savio</span>
+    <h2 id="portadaTitulo"><%= portada[0].titulo %></h2>
+    <p id="portadaTexto"><%= portada[0].texto %></p>
+  </div>
+  <div class="portada__controles">
+    <button type="button" class="portada__flecha" id="portadaAntes" aria-label="Foto anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <div class="portada__puntos" id="portadaPuntos">
+      <% portada.forEach(function (s, i) { %>
+        <button type="button" class="<%= i === 0 ? 'on' : '' %>" data-ir="<%= i %>" aria-label="Ver foto <%= i + 1 %>: <%= s.titulo %>"></button>
+      <% }) %>
+    </div>
+    <button type="button" class="portada__flecha" id="portadaDespues" aria-label="Foto siguiente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+  <span class="portada__progreso" id="portadaProgreso"></span>
+</section>
+<script id="datosPortada" type="application/json"><%- JSON.stringify(portada).replace(/</g, '\\u003c') %></script>
+
+<!-- Resumen de hoy -->
+<header class="seccion-titulo">
+  <div>
+    <h2>Asistencia de hoy</h2>
+    <p>Docentes y directivos que han pasado por el equipo · se actualiza sola</p>
+  </div>
+  <a class="btn" href="/asistencias">Ver asistencias</a>
+</header>
+<a class="franja franja--enlace" id="resumenHoy" href="/asistencias" aria-label="Ver la asistencia de hoy"></a>
+
+<div class="inicio">
+ <div class="inicio__principal">
+  <!-- Últimos pases del equipo -->
+  <section class="tarjeta">
+    <header class="tarjeta__cabeza tarjeta__cabeza--herramientas">
+      <h2><img class="ico ico--chico" src="/img/iconos/historial.png" alt="">Últimos pases de hoy</h2>
+      <span class="en-vivo"><i></i>En vivo</span>
+      <a class="btn btn--chico" href="/asistencias">Ver todos</a>
+    </header>
+    <ol class="pases" id="pases"><li class="vacio">Cargando…</li></ol>
+  </section>
+
+  <!-- Debajo de los pases: un solo bloque con el equipo (izquierda) y los accesos rápidos (derecha) -->
+  <section class="mando">
+    <!-- Equipo ESP32 -->
+    <a class="mando__equipo" href="/hardware" id="equipoTarjeta">
+      <span class="mando__rotulo">Equipo de asistencia</span>
+      <div class="mando__estado">
+        <span class="equipo-tarjeta__luz" id="eqLuz"></span>
+        <strong id="eqEstado">Consultando…</strong>
+      </div>
+      <dl class="mando__datos">
+        <div><dt>Modo</dt><dd id="eqModo">—</dd></div>
+        <div><dt>Última señal</dt><dd id="eqSenal">—</dd></div>
+      </dl>
+      <span class="mando__ir">ESP32-S3 · Ver el equipo <span aria-hidden="true">→</span></span>
+    </a>
+
+    <!-- Accesos rápidos -->
+    <div class="mando__accesos">
+      <span class="mando__titulo">Accesos rápidos</span>
+      <div class="accesos">
+        <button type="button" class="acceso" id="accManual">
+          <img src="/img/iconos/reloj-alerta.png" alt="">
+          <span><strong>Registro manual</strong><small>Si el equipo falló</small></span>
+        </button>
+        <button type="button" class="acceso" id="accNovedad">
+          <img src="/img/iconos/permiso.png" alt="">
+          <span><strong>Registrar permiso</strong><small>Incapacidad, calamidad…</small></span>
+        </button>
+        <a class="acceso" href="/personal/nuevo">
+          <img src="/img/iconos/docente.png" alt="">
+          <span><strong>Nuevo miembro</strong><small>Datos, huella y tarjeta</small></span>
+        </a>
+        <a class="acceso" id="accPdf" href="#" download>
+          <img src="/img/iconos/base-datos.png" alt="">
+          <span><strong>PDF de hoy</strong><small>Reporte para rectoría</small></span>
+        </a>
+      </div>
+    </div>
+  </section>
+ </div>
+
+  <aside class="inicio__lado">
+    <!-- Tradiciones: fotos verticales que pasan solas -->
+    <section class="tarjeta tradiciones" id="tradiciones" aria-label="Nuestras tradiciones">
+      <% tradiciones.forEach(function (t, i) { %>
+        <figure class="tradiciones__foto<%= i === 0 ? ' activa' : '' %>">
+          <img src="<%= t.foto %>" alt="<%= t.titulo %>" <%- i > 0 ? 'loading="lazy"' : '' %>>
+          <figcaption><small>Nuestras tradiciones</small><strong><%= t.titulo %></strong><span><%= t.texto %></span></figcaption>
+        </figure>
+      <% }) %>
+      <div class="tradiciones__puntos" aria-hidden="true">
+        <% tradiciones.forEach(function (t, i) { %><i class="<%= i === 0 ? 'on' : '' %>"></i><% }) %>
+      </div>
+    </section>
+
+    <!-- Calendario cercano -->
+    <section class="tarjeta">
+      <header class="tarjeta__cabeza"><h2>Para tener en cuenta</h2></header>
+      <ul class="pendientes-lista" id="calendarioCerca"><li class="ayuda">Cargando…</li></ul>
+    </section>
+  </aside>
+</div>
+
+<%- include('partials/pie', { script: 'inicio.js' }) %>

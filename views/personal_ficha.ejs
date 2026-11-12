@@ -1,0 +1,108 @@
+<%- include('partials/cabecera') %>
+
+<div class="ficha" id="ficha" data-id="<%= m.id_personal %>">
+
+  <!-- Columna izquierda: identidad -->
+  <div class="ficha__lado">
+    <%- include('partials/carnet', { m: m, editableFoto: true }) %>
+    <input type="file" id="archivoFoto" accept="image/*" hidden>
+
+    <div class="ficha__acciones">
+      <a class="btn" href="/personal/<%= m.id_personal %>/editar?desde=ficha">Editar datos</a>
+      <button type="button" class="btn" id="fImprimir">Imprimir carnet</button>
+    </div>
+
+    <section class="bloque bloque--datos">
+      <header class="bloque__cabeza">
+        <h2><img class="ico" src="/img/iconos/hoja-vida.png" alt="">Datos personales</h2>
+      </header>
+      <dl class="datos">
+        <div class="datos__ancho"><dt>Correo</dt><dd><%= m.correo %></dd></div>
+        <div><dt>Cédula</dt><dd class="num"><%= m.cedula %></dd></div>
+        <div><dt>Teléfono</dt><dd class="num"><%= m.telefono || 'Sin registrar' %></dd></div>
+        <div class="datos__ancho"><dt>Dirección</dt><dd><%= m.direccion || 'Sin registrar' %></dd></div>
+        <% if (m.rol === 'docente') { %>
+          <div><dt>Nivel</dt><dd><%= m.nivel || 'Sin nivel' %></dd></div>
+          <div><dt><%= m.asignatura ? 'Asignatura' : 'Grado a cargo' %></dt><dd><%= m.detalle || 'Sin asignar' %></dd></div>
+        <% } else { %>
+          <div class="datos__ancho"><dt>Cargo</dt><dd><%= m.detalle || 'Sin cargo' %></dd></div>
+        <% } %>
+        <div><dt>Jornada</dt><dd><%= m.nombre_jornada ? m.nombre_jornada + ' · ' + m.hora_entrada + ' a ' + m.hora_salida : 'Sin jornada' %></dd></div>
+        <div><dt>Estado</dt><dd id="dEstado"><span class="estado <%= m.activo ? 'estado--activo' : 'estado--baja' %>"><%= m.activo ? 'Activo' : 'Dado de baja' %></span></dd></div>
+      </dl>
+      <button type="button" class="btn <%= m.activo ? 'btn--peligro' : '' %>" id="fEstado"><%= m.activo ? 'Dar de baja' : 'Reactivar' %></button>
+    </section>
+  </div>
+
+  <!-- Columna derecha: credenciales y registros -->
+  <div class="ficha__principal">
+    <% if (nuevo) { %>
+      <p class="aviso aviso--ok" id="fAviso" role="status">Miembro creado. Ahora registre su huella y su tarjeta con el equipo.</p>
+    <% } else if (guardado) { %>
+      <p class="aviso aviso--ok" id="fAviso" role="status">Cambios guardados.</p>
+    <% } else { %>
+      <p class="aviso" id="fAviso" role="status" hidden></p>
+    <% } %>
+
+    <section class="bloque" id="bHuella">
+      <header class="bloque__cabeza">
+        <h2><img class="ico" src="/img/iconos/huella.png" alt="">Huella dactilar</h2>
+        <span class="marca" id="hMarca"></span>
+      </header>
+      <p class="ayuda" id="hTexto"></p>
+      <div class="fila" id="hBotones">
+        <button type="button" class="btn btn--primario" id="hEnrolar">Registrar huella</button>
+        <button type="button" class="btn" id="hQuitar">Quitar huella</button>
+      </div>
+      <div class="ranura" id="ranuraHuella"></div>
+    </section>
+
+    <section class="bloque" id="bTarjeta">
+      <header class="bloque__cabeza">
+        <h2>
+          <!-- Icono provisional de tarjeta: se reemplaza cuando llegue tarjeta.png -->
+          <svg class="ico" viewBox="0 0 48 48" fill="none" stroke="#000" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="10" width="40" height="28" rx="5"/><rect x="10" y="17" width="9" height="7" rx="1.5"/>
+            <path d="M10 31h14M30 18a6 6 0 0 1 0 9M35 15a11 11 0 0 1 0 15"/>
+          </svg>
+          Tarjeta RFID
+        </h2>
+        <span class="marca" id="tMarca"></span>
+      </header>
+      <p class="ayuda" id="tTexto"></p>
+      <div class="fila" id="tBotones">
+        <button type="button" class="btn btn--primario" id="tLeer">Leer con el lector</button>
+        <button type="button" class="btn" id="tBloquear"></button>
+        <button type="button" class="btn" id="tQuitar">Quitar tarjeta</button>
+      </div>
+      <div class="ranura" id="ranuraTarjeta"></div>
+    </section>
+
+    <section class="bloque">
+      <header class="bloque__cabeza">
+        <h2><img class="ico" src="/img/iconos/historial.png" alt="">Últimos registros</h2>
+        <a class="btn btn--chico" href="/asistencias/persona/<%= m.id_personal %>">Ver historial completo</a>
+      </header>
+      <ol class="registros" id="fRegistros"><li class="registros__vacio">Cargando…</li></ol>
+    </section>
+
+    <div class="ficha__terminar">
+      <a class="btn btn--primario btn--grande" href="/personal?guardado=1">Terminar y volver a la lista</a>
+    </div>
+  </div>
+</div>
+
+<!-- Proceso en vivo con el equipo (se mueve a la sección de huella o de tarjeta) -->
+<div class="proceso" id="proceso" hidden>
+  <ol class="pasos" id="pasos"></ol>
+  <div class="lcd" aria-hidden="true">
+    <div class="lcd__vidrio" id="lcd"></div>
+    <span class="lcd__nota">Pantalla del equipo</span>
+  </div>
+  <div class="proceso__pie">
+    <span class="proceso__tiempo" id="pTiempo"></span>
+    <button type="button" class="btn" id="pCancelar">Cancelar</button>
+  </div>
+</div>
+
+<%- include('partials/pie', { script: 'personal_ficha.js' }) %>

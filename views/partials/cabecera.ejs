@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= titulo %> · Colegio Santo Domingo Savio</title>
+<script>try{if(localStorage.getItem('savio.menuFijo')==='1')document.documentElement.classList.add('menu-fijo')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/panel.css">
+</head>
+<body>
+<div class="app">
+<%- include('sidebar') %>
+<div class="principal">
+  <header class="barra">
+    <div class="barra__titulo">
+      <button type="button" class="barra__menu" id="btnMenu" aria-expanded="false">Menú</button>
+      <% if (locals.volver) { %>
+        <a class="btn btn--volver" href="<%= volver.url %>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          <%= volver.texto %>
+        </a>
+      <% } %>
+      <div>
+        <% if (locals.migas) { %><span class="barra__seccion"><%= titulo %></span><% } %>
+        <h1><%= locals.migas || titulo %></h1>
+      </div>
+    </div>
+    <div class="barra__estado">
+      <span class="fecha"><%= fecha %></span>
+      <button type="button" class="voz" id="btnVoz" aria-pressed="false" title="Anunciar con voz las llegadas y salidas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9v6h4l5 4V5L8 9z"/><path class="voz__ondas" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/><path class="voz__x" d="M16 9l5 6M21 9l-5 6"/>
+        </svg>
+        <span id="vozTexto">Voz apagada</span>
+      </button>
+      <%
+        const d = dispositivo;
+        const espera = d.modo !== 'asistencia';
+        const clase = espera ? 'equipo--espera' : (d.enLinea ? 'equipo--linea' : 'equipo--fuera');
+        const texto = espera
+          ? (d.modo === 'registro' ? 'Registrando huella' : 'Esperando tarjeta') + (d.nombre ? ' · ' + d.nombre.split(' ')[0] : '')
+          : (d.enLinea ? 'Equipo en línea · Asistencia' : 'Equipo sin conexión');
+      %>
+      <div class="equipo <%= clase %>" id="equipo" role="status" aria-live="polite">
+        <i></i><span id="equipoTexto"><%= texto %></span>
+        <button type="button" id="equipoDetener" <%= espera ? '' : 'hidden' %>>Detener</button>
+      </div>
+    </div>
+  </header>
+  <main class="contenido">
