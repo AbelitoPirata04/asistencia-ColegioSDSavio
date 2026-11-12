@@ -1,0 +1,58 @@
+<%- include('partials/cabecera') %>
+<%
+  const ultimo = yo.ultimo_ingreso
+    ? new Date(yo.ultimo_ingreso).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Bogota' })
+    : 'Primer ingreso';
+  const sig = yo.nombre_completo.split(' ').filter(Boolean).slice(0, 2).map(function (p) { return p[0]; }).join('').toUpperCase();
+%>
+
+<% if (yo.debe_cambiar_clave) { %>
+  <div class="aviso-dia aviso-dia--clave">
+    <strong>Cambie su contraseña para continuar</strong>
+    <span>Está usando una contraseña temporal. Por seguridad, elija una nueva antes de entrar al panel.</span>
+  </div>
+<% } %>
+
+<div class="cuenta">
+  <!-- Mis datos + cambiar contraseña -->
+  <section class="tarjeta cuenta__yo">
+    <div class="cuenta__perfil">
+      <span class="sigla cuenta__sigla"><%= sig %></span>
+      <div>
+        <span class="pieza__apodo">Encargado de asistencia</span>
+        <h2><%= yo.nombre_completo %></h2>
+        <p class="ayuda"><%= yo.correo %> · Último ingreso: <%= ultimo %></p>
+      </div>
+    </div>
+
+    <form class="cuenta__clave" id="formClave" novalidate>
+      <h3>Cambiar contraseña</h3>
+      <label>Contraseña actual<input name="actual" type="password" autocomplete="current-password" required></label>
+      <div class="dos">
+        <label>Nueva contraseña<input name="nueva" type="password" autocomplete="new-password" minlength="8" required></label>
+        <label>Repetir la nueva<input name="confirmar" type="password" autocomplete="new-password" minlength="8" required></label>
+      </div>
+      <p class="ayuda">Mínimo 8 caracteres. Mejor si mezcla letras y números.</p>
+      <p class="aviso" id="avisoClave" role="status" hidden></p>
+      <div class="cuenta__acciones">
+        <button type="submit" class="btn btn--primario">Guardar contraseña</button>
+      </div>
+    </form>
+  </section>
+
+  <% if (!yo.debe_cambiar_clave) { %>
+  <!-- Encargados con acceso -->
+  <section class="tarjeta cuenta__equipo">
+    <header class="tarjeta__cabeza tarjeta__cabeza--herramientas">
+      <h2><img class="ico ico--chico" src="/img/iconos/docente.png" alt="">Encargados con acceso</h2>
+      <button type="button" class="btn btn--chico" id="btnNuevoEncargado">Dar acceso</button>
+    </header>
+    <p class="cuenta__nota ayuda">Solo estas personas pueden entrar al panel. Si alguien olvida su contraseña, restablézcala aquí: le quedará una temporal que deberá cambiar al ingresar.</p>
+    <ul class="encargados" id="encargados"><li class="ayuda">Cargando…</li></ul>
+  </section>
+  <% } %>
+</div>
+
+<p class="aviso aviso--ok aviso--flotante" id="avisoCuenta" role="status" hidden></p>
+
+<%- include('partials/pie', { script: 'cuenta.js' }) %>

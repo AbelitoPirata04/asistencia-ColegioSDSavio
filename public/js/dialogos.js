@@ -71,6 +71,9 @@
     });
   }
 
+  // Disponible para otras vistas (ej. "Mi cuenta"): VentanaFormulario({ titulo, subtitulo, cuerpo, boton, guardar })
+  window.VentanaFormulario = ventana;
+
   async function enviar(url, metodo, cuerpo) {
     const r = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
     const j = await r.json().catch(() => ({}));

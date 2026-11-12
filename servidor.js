@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { pool, probarConexion } = require('./config/conexion_bd');
 const dispositivo = require('./servicios/dispositivo');
+const sesion = require('./servicios/sesion');
 
 const app = express();
 // Un 2.º pase antes de este tiempo se toma como error y el equipo pide pasar otra vez para salir
@@ -15,13 +16,18 @@ if (!fs.existsSync(carpetaFotos)) {
   fs.mkdirSync(carpetaFotos);
 }
 
-app.use(cors());
+app.use('/api', cors());                     // solo la API del equipo ESP32; el panel no necesita CORS
 app.use(express.json({ limit: '10mb' }));
 app.use('/api/fotos', express.raw({ type: 'image/jpeg', limit: '5mb' }));
-app.use('/uploads', express.static(carpetaFotos));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));   // CSS, JS, imágenes (sin sesión)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// ----- Inicio de sesión: todo lo que sigue pide sesión, menos /api (equipo) y /login -----
+app.use((req, res, next) => (req.path.startsWith('/api/') ? next() : sesion.leerUsuario(req, res, next)));
+app.use(sesion.exigir);
+app.use('/uploads', express.static(carpetaFotos));       // fotos de personas: solo con sesión
+app.use('/', require('./routes/cuenta'));
 app.use('/', require('./routes/panel'));
 
 // 1. Ruta para que el ESP32 pregunte el modo (asistencia, registro o tarjeta)

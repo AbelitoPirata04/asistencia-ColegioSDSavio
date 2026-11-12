@@ -737,6 +737,70 @@ small.manual{display:inline-block;margin-top:2px;padding:0 6px;border-radius:4px
 .otros strong{font-size:14px}
 .otros span{font-size:12.5px;color:var(--tinta-2);line-height:1.5}
 
+/* ================= Ingreso (login) ================= */
+body.ingreso{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr);background:#fff}
+.ingreso__fotos{position:relative;overflow:hidden;background:#3A0000}
+.ingreso__fotos>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease}
+.ingreso__fotos>img.activa{opacity:1;animation:acercar 9s ease-out forwards}
+.ingreso__fotos::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(70,0,0,.86) 0%,rgba(70,0,0,.35) 42%,rgba(70,0,0,0) 70%)}
+.ingreso__lema{position:absolute;z-index:1;left:clamp(28px,5vw,64px);bottom:clamp(28px,6vh,60px);display:flex;align-items:center;gap:18px;color:#fff}
+.ingreso__lema img{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:12px;padding:4px}
+.ingreso__lema p{font:600 clamp(22px,2.2vw,30px)/1.2 'Dancing Script',cursive;padding-left:18px;border-left:3px solid #FFD21F}
+.ingreso__panel{display:grid;place-items:center;padding:40px 24px}
+.ingreso__form{width:min(380px,100%);display:flex;flex-direction:column;gap:16px}
+.ingreso__escudo{width:58px;height:58px;object-fit:contain}
+.ingreso__colegio{margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rojo)}
+.ingreso__form h1{font:800 32px/1.1 var(--titulos);letter-spacing:-.025em;margin-top:-8px}
+.ingreso__sub{color:var(--tinta-2);margin-top:-8px;margin-bottom:6px}
+.ingreso__form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500}
+.ingreso__form input{padding:12px 14px;font-size:15px;border-radius:10px}
+.ingreso__clave{position:relative;display:block}
+.ingreso__clave input{padding-right:84px}
+.ingreso__clave button{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:6px 10px;border:0;border-radius:7px;background:#F3F2EE;
+  font:500 12.5px var(--fuente);color:var(--tinta-2);cursor:pointer}
+.ingreso__clave button:hover{color:var(--tinta)}
+.ingreso__entrar{width:100%;padding:13px;font-size:15px;font-weight:600;border-radius:10px;margin-top:4px}
+.ingreso__ayuda{font-size:12.5px;color:var(--tinta-2);text-align:center;margin-top:6px;padding-top:16px;border-top:1px solid var(--linea)}
+@media (max-width:860px){
+  body.ingreso{grid-template-columns:1fr;grid-template-rows:200px 1fr}
+  .ingreso__lema img{width:44px;height:44px}
+  .ingreso__lema p{font-size:20px}
+}
+
+/* ================= Mi cuenta ================= */
+.cuenta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:start}
+.cuenta .tarjeta{margin-bottom:0}
+.cuenta__yo{padding:22px 24px;display:flex;flex-direction:column;gap:22px}
+.cuenta__perfil{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--linea)}
+.cuenta__sigla{width:56px;height:56px;font-size:19px;border-radius:12px}
+.cuenta__perfil h2{font:700 21px/1.2 var(--titulos);margin:2px 0}
+.cuenta__clave{display:flex;flex-direction:column;gap:14px}
+.cuenta__clave h3{font:650 16px var(--titulos)}
+.cuenta__clave label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500}
+.cuenta__acciones{display:flex;justify-content:flex-end}
+.cuenta__nota{padding:14px 20px 0}
+.encargados{list-style:none;padding:8px 20px 16px}
+.encargado{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ECECE7}
+.encargado:last-child{border-bottom:0}
+.encargado__datos{flex:1;min-width:0}
+.encargado__datos strong{display:block;font-size:14px}
+.encargado__datos small{display:block;font-size:12px;color:var(--tinta-2)}
+.encargado__yo{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--verde-fondo);color:var(--verde);font-size:11px;font-weight:600;vertical-align:1px}
+.encargado__temporal{color:var(--ambar);font-weight:600}
+.encargado__acciones{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.aviso-dia--clave{background:var(--ambar-fondo);border-color:var(--ambar-borde);color:var(--ambar)}
+
+/* Sesión en el menú lateral */
+.side__sesion{display:flex;flex-direction:column;gap:2px;margin:8px 14px 0;padding-top:8px;border-top:1px solid rgba(255,255,255,.18)}
+.side__sesion a,.side__sesion button{display:flex;align-items:center;gap:14px;width:100%;padding:10px 14px;border:0;border-radius:10px;background:none;
+  color:rgba(255,255,255,.85);font:500 13px var(--fuente);text-align:left;cursor:pointer;white-space:nowrap;transition:background .15s}
+.side__sesion a:hover,.side__sesion button:hover{background:rgba(255,255,255,.12);color:#fff}
+.side__sesion a.activo{background:var(--amarillo);color:var(--tinta)}
+.side__sesion a:focus-visible,.side__sesion button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.side__sesion span{opacity:0;transform:translateX(-6px);transition:opacity .15s,transform .2s var(--curva)}
+.side:hover .side__sesion span,.side:focus-within .side__sesion span,.menu-fijo .side__sesion span{opacity:1;transform:none;transition-delay:.1s}
+.side__sesion + .side__fijar{border-top:0;margin-top:0}
+
 /* ================= Ventanas de formulario (registro manual, novedad, día sin clase) ================= */
 .ventana{border:0;padding:0;border-radius:14px;width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);color:var(--tinta);background:#fff;box-shadow:0 24px 70px rgba(40,0,0,.35)}
 .ventana::backdrop{background:rgba(30,10,10,.5)}
@@ -802,7 +866,7 @@ textarea:focus-visible{outline:2px solid var(--rojo);outline-offset:1px}
 
 /* ================= Responsive ================= */
 @media (max-width:1100px){
-  .registro,.ficha{grid-template-columns:minmax(0,1fr)}
+  .registro,.ficha,.cuenta{grid-template-columns:minmax(0,1fr)}
   .flujo{grid-template-columns:repeat(3,minmax(0,1fr))}
   .flujo li::after{display:none}
   .campos--3{grid-template-columns:1fr 1fr}
@@ -814,7 +878,7 @@ textarea:focus-visible{outline:2px solid var(--rojo);outline-offset:1px}
   .side,.side:hover,.side:focus-within,.menu-fijo .side{width:var(--menu);transform:translateX(-105%);transition:transform .3s var(--curva);box-shadow:none}
   .menu-movil .side{transform:none;box-shadow:10px 0 40px rgba(70,0,0,.32)}
   .side .placa{width:132px}
-  .side nav span,.side .side__pie p{opacity:1;transform:none}
+  .side nav span,.side .side__pie p,.side .side__sesion span{opacity:1;transform:none}
   .side__fijar{display:none}
   .barra__menu{display:block}
   .barra__titulo{flex-wrap:wrap;gap:12px}

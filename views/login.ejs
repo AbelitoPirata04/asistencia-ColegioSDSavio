@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · Colegio Santo Domingo Savio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/panel.css">
+</head>
+<body class="ingreso">
+
+  <!-- Fotos del colegio -->
+  <aside class="ingreso__fotos" aria-hidden="true">
+    <img class="activa" src="/img/institucion/equipo-docente.jpg" alt="">
+    <img src="/img/institucion/clausura-2025.jpg" alt="">
+    <img src="/img/institucion/estudiantes-semana-cultural.jpg" alt="">
+    <img src="/img/institucion/club-de-lectura.jpg" alt="">
+    <div class="ingreso__lema">
+      <img src="/img/logo_pequeno.png" alt="">
+      <p>Formando con<br>Ciencia, Valores y<br>Autonomía</p>
+    </div>
+  </aside>
+
+  <!-- Formulario -->
+  <main class="ingreso__panel">
+    <form class="ingreso__form" id="formIngreso" novalidate>
+      <img class="ingreso__escudo" src="/img/logo_pequeno.png" alt="Escudo del Colegio Santo Domingo Savio">
+      <span class="ingreso__colegio">Colegio Santo Domingo Savio</span>
+      <h1>Control de asistencia</h1>
+      <p class="ingreso__sub">Ingrese con su cuenta de encargado.</p>
+
+      <label>Correo
+        <input name="correo" type="email" autocomplete="username" required autofocus placeholder="nombre@savio.edu.co">
+      </label>
+      <label>Contraseña
+        <span class="ingreso__clave">
+          <input name="clave" id="clave" type="password" autocomplete="current-password" required>
+          <button type="button" id="verClave" aria-pressed="false">Mostrar</button>
+        </span>
+      </label>
+      <input type="hidden" name="volver" value="<%= volver %>">
+
+      <p class="aviso aviso--error" id="error" role="alert" hidden></p>
+      <button type="submit" class="btn btn--primario ingreso__entrar">Ingresar</button>
+
+      <p class="ingreso__ayuda">¿Olvidó su contraseña? Otro encargado puede restablecerla desde <b>Mi cuenta</b>.</p>
+    </form>
+  </main>
+
+<script>
+(() => {
+  const form = document.getElementById('formIngreso');
+  const error = document.getElementById('error');
+  const clave = document.getElementById('clave');
+  const ver = document.getElementById('verClave');
+
+  ver.addEventListener('click', () => {
+    const mostrar = clave.type === 'password';
+    clave.type = mostrar ? 'text' : 'password';
+    ver.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+    ver.setAttribute('aria-pressed', String(mostrar));
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    error.hidden = true;
+    const boton = form.querySelector('[type="submit"]');
+    boton.disabled = true;
+    boton.textContent = 'Ingresando…';
+    try {
+      const r = await fetch('/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.mensaje || 'No se pudo ingresar.');
+      location.href = j.destino || '/';
+    } catch (err) {
+      error.textContent = err.message;
+      error.hidden = false;
+      boton.disabled = false;
+      boton.textContent = 'Ingresar';
+      clave.select();
+    }
+  });
+
+  // Las fotos cambian solas, despacio
+  const fotos = [...document.querySelectorAll('.ingreso__fotos > img')];
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let i = 0;
+    setInterval(() => {
+      fotos[i].classList.remove('activa');
+      i = (i + 1) % fotos.length;
+      fotos[i].classList.add('activa');
+    }, 6000);
+  }
+})();
+</script>
+</body>
+</html>

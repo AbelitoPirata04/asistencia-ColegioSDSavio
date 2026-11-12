@@ -1,5 +1,13 @@
 // Comportamiento común de todas las páginas: menú lateral y estado del ESP32 en la barra superior.
 (() => {
+  // Si la sesión vence mientras la página está abierta, cualquier petición devuelve 401: se vuelve al ingreso
+  const fetchOriginal = window.fetch.bind(window);
+  window.fetch = async (...args) => {
+    const r = await fetchOriginal(...args);
+    if (r.status === 401) location.href = '/login?volver=' + encodeURIComponent(location.pathname + location.search);
+    return r;
+  };
+
   const raiz = document.documentElement;
   const $ = (s) => document.querySelector(s);
 

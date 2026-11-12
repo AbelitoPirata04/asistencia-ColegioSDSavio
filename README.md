@@ -53,6 +53,16 @@ arduino/               Código del ESP32
 scripts/datos_demo.js  Crea / borra datos de demostración
 ```
 
+## Acceso al panel
+
+Solo entran los encargados de asistencia (rol administrador), con correo y contraseña.
+Desde **Mi cuenta** se cambia la contraseña y se da o quita acceso a otros encargados.
+Si nadie puede entrar:
+
+```
+node scripts/restablecer_clave.js correo@savio.edu.co ClaveTemporal123
+```
+
 ## Datos de demostración
 
 ```
@@ -62,6 +72,5 @@ node scripts/datos_demo.js --borrar   # los borra (no toca los datos reales)
 
 ## Pendiente
 
-- Inicio de sesión del administrador y clave para la API del equipo.
 - Configuración del WiFi del equipo sin reprogramarlo (portal WiFiManager).
 - Respaldo en tarjeta MicroSD cuando no hay internet.
