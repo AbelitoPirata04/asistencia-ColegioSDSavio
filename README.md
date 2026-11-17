@@ -50,7 +50,7 @@ views/                 Páginas (EJS)
 public/                CSS, JavaScript del navegador e imágenes
 sql/                   Esquema completo y migraciones
 arduino/               Código del ESP32
-scripts/datos_demo.js  Crea / borra datos de demostración
+scripts/               Restablecer la contraseña del panel
 ```
 
 ## Acceso al panel
@@ -61,13 +61,6 @@ Si nadie puede entrar:
 
 ```
 node scripts/restablecer_clave.js correo@savio.edu.co ClaveTemporal123
-```
-
-## Datos de demostración
-
-```
-node scripts/datos_demo.js            # crea 14 docentes de prueba con 2 semanas de registros
-node scripts/datos_demo.js --borrar   # los borra (no toca los datos reales)
 ```
 
 ## Pendiente
