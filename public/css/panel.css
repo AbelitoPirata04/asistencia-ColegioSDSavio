@@ -857,6 +857,8 @@ textarea:focus-visible{outline:2px solid var(--rojo);outline-offset:1px}
 .confirmar__titulo{font:650 19px/1.3 var(--titulos)}
 .confirmar__mensaje{font-size:14px;color:var(--tinta-2)}
 .confirmar__botones{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+.instalar__pasos{display:flex;flex-direction:column;gap:8px;margin:2px 0 0;padding-left:20px;font-size:14px;line-height:1.5}
+.instalar__pasos li::marker{color:var(--rojo)}
 .btn--rojo{background:var(--rojo);border-color:var(--rojo);color:#fff}
 .btn--rojo:hover{background:var(--rojo-hover)}
 
