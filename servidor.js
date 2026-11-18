@@ -5,6 +5,7 @@ const fs = require('fs');
 const { pool, probarConexion } = require('./config/conexion_bd');
 const dispositivo = require('./servicios/dispositivo');
 const sesion = require('./servicios/sesion');
+const avisosPush = require('./servicios/avisos_push');
 
 const app = express();
 // Un 2.º pase antes de este tiempo se toma como error y el equipo pide pasar otra vez para salir
@@ -133,7 +134,11 @@ app.post('/api/asistencias', async (req, res) => {
       );
       console.log(`✅ Llegada: ${docente.nombre_completo} (${puntualidad})`);
       // id_asistencia: el equipo lo manda con la foto para pegarla a este registro
-      return res.status(201).json({ ...base, accion: 'entrada', id_asistencia: ins.insertId, estado: puntualidad });
+      res.status(201).json({ ...base, accion: 'entrada', id_asistencia: ins.insertId, estado: puntualidad });
+      // Aviso al teléfono del encargado (después de responder: el equipo no espera)
+      avisosPush.pase({ tipo: 'entrada', idPersonal: docente.id_personal, nombre: docente.nombre_completo,
+        idAsistencia: ins.insertId, fecha: ahora, metodo: tipo, estado: puntualidad });
+      return;
     }
 
     const reg = hoy[0];
@@ -154,7 +159,10 @@ app.post('/api/asistencias', async (req, res) => {
       [ahora, tipo, reg.id_asistencia]
     );
     console.log(`👋 Salida: ${docente.nombre_completo}`);
-    return res.status(201).json({ ...base, accion: 'salida', id_asistencia: reg.id_asistencia });
+    res.status(201).json({ ...base, accion: 'salida', id_asistencia: reg.id_asistencia });
+    avisosPush.pase({ tipo: 'salida', idPersonal: docente.id_personal, nombre: docente.nombre_completo,
+      idAsistencia: reg.id_asistencia, fecha: ahora, metodo: tipo });
+    return;
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,6 +1,6 @@
 // Service worker de la app: abre rápido y muestra un aviso cuando no hay internet.
 // Nunca guarda datos de asistencia ni fotos de personas: eso siempre viene del servidor.
-const VERSION = 'savio-v1';
+const VERSION = 'savio-v2';
 const BASE = ['/offline.html', '/css/panel.css', '/img/logo_pequeno.png', '/img/app/icono-192.png'];
 
 self.addEventListener('install', (e) => {
@@ -50,4 +50,35 @@ self.addEventListener('fetch', (e) => {
     );
   }
   // Lo demás (datos, fotos de personas, descargas): normal, sin guardar nada
+});
+
+// ---------- Avisos push: llegó / salió alguien ----------
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { titulo: 'Asistencia Savio', cuerpo: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.titulo || 'Asistencia Savio', {
+    body: d.cuerpo || '',
+    icon: '/img/app/icono-192.png',
+    badge: '/img/app/insignia-96.png',
+    tag: d.tema || undefined,
+    lang: 'es-CO',
+    data: { url: d.url || '/' }
+  }));
+});
+
+// Tocar el aviso abre la app (o la trae al frente) en el historial de esa persona
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const destino = new URL((e.notification.data && e.notification.data.url) || '/', self.location.origin).href;
+  e.waitUntil((async () => {
+    const abiertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of abiertas) {
+      if (new URL(c.url).origin === self.location.origin && 'focus' in c) {
+        await c.focus();
+        if ('navigate' in c) return c.navigate(destino);
+        return;
+      }
+    }
+    return self.clients.openWindow(destino);
+  })());
 });

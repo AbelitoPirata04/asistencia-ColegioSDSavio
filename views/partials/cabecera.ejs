@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><%= titulo %> · Colegio Santo Domingo Savio</title>
 <script>try{if(localStorage.getItem('savio.menuFijo')==='1')document.documentElement.classList.add('menu-fijo')}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,12 @@
           <path d="M4 9v6h4l5 4V5L8 9z"/><path class="voz__ondas" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/><path class="voz__x" d="M16 9l5 6M21 9l-5 6"/>
         </svg>
         <span id="vozTexto">Voz apagada</span>
+      </button>
+      <button type="button" class="voz" id="btnAvisos" aria-pressed="false" hidden title="Recibir en este dispositivo un aviso cuando alguien llegue o salga">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/><path class="voz__x" d="M4 4l16 16"/>
+        </svg>
+        <span id="avisosTexto">Avisos apagados</span>
       </button>
       <%
         const d = dispositivo;

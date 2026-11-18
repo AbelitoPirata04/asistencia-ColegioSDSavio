@@ -7,6 +7,7 @@ const dispositivo = require('../servicios/dispositivo');
 const asistencias = require('../servicios/asistencias');
 const reportes = require('../servicios/reportes');
 const { festivosColombia } = require('../servicios/festivos');
+const avisosPush = require('../servicios/avisos_push');
 
 const router = express.Router();
 const ROLES = ['docente', 'directivo'];
@@ -51,6 +52,29 @@ const TRADICIONES = [
 
 router.get('/', comunes, (req, res) =>
   res.render('inicio', { titulo: 'Inicio', activo: 'inicio', portada: PORTADA, tradiciones: TRADICIONES }));
+
+// ---------- Avisos push en el teléfono o PC del encargado ----------
+router.get('/admin/api/push/clave', (req, res) => res.json({ clave: avisosPush.clavePublica }));
+
+router.post('/admin/api/push/suscripcion', async (req, res) => {
+  try {
+    await avisosPush.guardar(req.usuario.id_personal, req.body && req.body.suscripcion, req.get('user-agent'));
+    res.json({ ok: true });
+    // Un aviso de prueba para que vea que llegan (no cuando solo se está sincronizando al abrir la app)
+    if (!req.body.silencioso) avisosPush.prueba(req.usuario.id_personal);
+  } catch (e) {
+    res.status(400).json({ mensaje: e.message });
+  }
+});
+
+router.delete('/admin/api/push/suscripcion', async (req, res) => {
+  try {
+    await avisosPush.quitar(req.body && req.body.endpoint);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ mensaje: e.message });
+  }
+});
 
 // Pases de los últimos minutos (llegadas y salidas hechas en el equipo, no las manuales).
 // El panel pregunta seguido y anuncia con notificación y voz los que no ha visto.

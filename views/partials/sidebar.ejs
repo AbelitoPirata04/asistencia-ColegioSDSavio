@@ -52,3 +52,17 @@
   </div>
 </aside>
 <div class="velo" id="velo" hidden></div>
+
+<!-- Barra inferior (solo en teléfonos): las secciones de uso diario + "Más" abre el menú completo -->
+<nav class="abajo" aria-label="Secciones">
+  <% items.slice(0, 4).forEach(function (it) { %>
+    <a href="<%= it[0] %>" class="<%= activo === it[1] ? 'activo' : '' %>" <%- activo === it[1] ? 'aria-current="page"' : '' %>>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<%= it[3] %>"/></svg>
+      <span><%= it[1] === 'personal' ? 'Docentes' : it[1] === 'novedades' ? 'Novedades' : it[2] %></span>
+    </a>
+  <% }) %>
+  <button type="button" id="btnMas" class="<%= ['hardware', 'cuenta'].includes(activo) ? 'activo' : '' %>" aria-label="Más opciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <span>Más</span>
+  </button>
+</nav>

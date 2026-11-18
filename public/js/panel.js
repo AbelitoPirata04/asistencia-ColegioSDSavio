@@ -37,6 +37,8 @@
     velo.hidden = !abrir;
   };
   btnMenu.addEventListener('click', () => menuMovil(!raiz.classList.contains('menu-movil')));
+  const btnMas = $('#btnMas');   // "Más" de la barra inferior en teléfonos
+  if (btnMas) btnMas.addEventListener('click', () => menuMovil(!raiz.classList.contains('menu-movil')));
   velo.addEventListener('click', () => menuMovil(false));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menuMovil(false); });
 
