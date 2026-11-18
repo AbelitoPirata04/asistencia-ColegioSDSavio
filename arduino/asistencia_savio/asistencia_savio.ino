@@ -722,6 +722,7 @@ void loop() {
 
   if (cambioModo) {
     cambioModo = false;
+    reiniciarLcd();                       // pantalla limpia al cambiar de modo
     if (modoActual != MODO_ASISTENCIA) beepCorto();
   }
 
@@ -730,6 +731,13 @@ void loop() {
   ultimoSensor = millis();
 
   int modo = modoActual;
+
+  // Cada 20 s, en cualquier modo: limpia la pantalla (el ruido de la fuente o del WiFi
+  // a veces deja letras raras) y revisa que el lector de tarjetas siga respondiendo
+  if (millis() - ultimoRefrescoLcd > 20000) {
+    reiniciarLcd();
+    revisarLectorRfid();
+  }
 
   // ---- MODO REGISTRO DE HUELLA ----
   if (modo == MODO_REGISTRO) {
@@ -743,21 +751,18 @@ void loop() {
   if (modo == MODO_TARJETA) {
     mostrar("MODO: TARJETA", "Acerque tarjeta");
     String uid = leerTarjeta();
-    if (uid != "") asignarTarjeta(uid);
+    if (uid != "") { asignarTarjeta(uid); reiniciarLcd(); }
     return;
   }
 
   // ---- MODO ASISTENCIA ----
-  if (millis() - ultimoRefrescoLcd > 30000) {   // cada 30 s: limpia la pantalla y revisa el lector
-    reiniciarLcd();
-    revisarLectorRfid();
-  }
   mostrar(horaActual() + " ASISTENCIA", servidorOK ? "Pase ID o Dedo.." : "Sin servidor...");
 
   int id = leerHuella();
   if (id > 0) {
     marcarAsistencia("huella", String(id));
     esperarSinDedo(2500);
+    reiniciarLcd();                       // después de la foto y el envío, pantalla limpia
     return;
   }
   if (id == -1) {
@@ -769,5 +774,5 @@ void loop() {
   }
 
   String uid = leerTarjeta();
-  if (uid != "") marcarAsistencia("rfid", uid);
+  if (uid != "") { marcarAsistencia("rfid", uid); reiniciarLcd(); }
 }
