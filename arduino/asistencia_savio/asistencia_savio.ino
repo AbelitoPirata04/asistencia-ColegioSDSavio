@@ -315,8 +315,38 @@ String lcdAjustar(String t) {
   return s;
 }
 
-// Escribe las dos líneas completas
-void lcdPintar() {
+// Lee en qué casilla quedó la pantalla (contador de dirección del chip).
+// Sirve para saber si sigue sincronizada SIN tener que re-sincronizar (que se ve como un parpadeo).
+#define LCD_RW  0x02     // 1 = leer de la pantalla
+int lcdLeerDireccion() {
+  uint8_t base = 0xF0 | LCD_LUZ | LCD_RW;          // líneas de datos en alto para poder leer
+  uint8_t sube[1] = { (uint8_t)(base | LCD_EN) }, baja[1] = { base };
+  if (!lcdI2C(baja, 1) || !lcdI2C(sube, 1)) return -1;
+  if (Wire.requestFrom((uint8_t)LCD_DIR, (uint8_t)1) != 1) { lcdFallo = true; return -1; }
+  uint8_t alto = Wire.read() & 0xF0;
+  if (!lcdI2C(baja, 1) || !lcdI2C(sube, 1)) return -1;
+  if (Wire.requestFrom((uint8_t)LCD_DIR, (uint8_t)1) != 1) { lcdFallo = true; return -1; }
+  uint8_t bajo = Wire.read() >> 4;
+  lcdI2C(baja, 1);
+  return (alto | bajo) & 0x7F;                       // sin el bit de "ocupada"
+}
+
+void lcdEscribirLineas() {
+  for (int f = 0; f < 2; f++) {
+    lcdEnviar(0x80 | (f ? 0x40 : 0x00), false);    // inicio de la línea
+    for (int i = 0; i < 16; i++) lcdEnviar((uint8_t)lcdTexto[f][i], true);
+  }
+}
+
+// Después de escribir las 32 casillas, la pantalla debe quedar en la casilla 0x50
+bool lcdEnOrden() { return lcdLeerDireccion() == 0x50; }
+
+bool lcdVerificable = true;          // false si este módulo no deja leer: se usa el plan B
+int lcdLecturasMalas = 0;
+unsigned long ultimaSincronizacion = 0;
+
+// Escribe las dos líneas completas. Solo re-sincroniza si hace falta.
+void lcdPintar(bool forzar = false) {
   if (lcdFallo) {                       // el bus I2C se trabó: se reinicia
     Wire.end();
     delay(5);
@@ -324,13 +354,35 @@ void lcdPintar() {
     Wire.setClock(100000);
     Wire.setTimeOut(50);
     lcdFallo = false;
+    forzar = true;
   }
-  lcdSincronizar();
-  for (int f = 0; f < 2; f++) {
-    lcdEnviar(0x80 | (f ? 0x40 : 0x00), false);   // inicio de la línea
-    for (int i = 0; i < 16; i++) lcdEnviar((uint8_t)lcdTexto[f][i], true);
+  // Plan B (módulo sin lectura): re-sincroniza cada 15 s en vez de cada 2 s
+  if (!lcdVerificable && millis() - ultimaSincronizacion >= 15000) forzar = true;
+  if (forzar) { lcdSincronizar(); ultimaSincronizacion = millis(); }
+  lcdEscribirLineas();
+
+  if (lcdVerificable && !lcdEnOrden()) {           // desfasada: ahora sí se re-sincroniza
+    lcdSincronizar();
+    ultimaSincronizacion = millis();
+    lcdEscribirLineas();
+    if (lcdEnOrden()) lcdLecturasMalas = 0;
+    else if (++lcdLecturasMalas >= 3) {
+      lcdVerificable = false;                       // nunca responde bien: este módulo no deja leer
+      Serial.println("[LCD] El modulo no permite leer; se usa limpieza periodica");
+    }
   }
   ultimoRefrescoLcd = millis();
+}
+
+// Recuperación completa: reinicia el bus I2C y repinta (re-sincroniza solo si la pantalla está desfasada)
+void reiniciarLcd() {
+  Wire.end();
+  delay(5);
+  Wire.begin(SDA_PIN, SCL_PIN);
+  Wire.setClock(100000);
+  Wire.setTimeOut(50);
+  lcdFallo = false;
+  lcdPintar(!lcdVerificable);
 }
 
 void mostrar(String l0, String l1) {
@@ -342,15 +394,9 @@ void mostrar(String l0, String l1) {
   lcdPintar();
 }
 
-// Se llama seguido: cada 2 s repinta lo mismo para corregir cualquier daño
+// Se llama seguido: cada 2 s repinta lo mismo (sin parpadeo) y comprueba que la pantalla siga en orden
 void refrescarLcd() {
   if (lcdFallo || millis() - ultimoRefrescoLcd >= 2000) lcdPintar();
-}
-
-// Recuperación completa: reinicia el bus I2C y repinta
-void reiniciarLcd() {
-  lcdFallo = true;
-  lcdPintar();
 }
 
 String dosDigitos(int n) { return (n < 10 ? "0" : "") + String(n); }
@@ -718,6 +764,7 @@ void setup() {
   // Cámara primero (antes del WiFi)
   mostrar("Iniciando...", "Camara");
   camaraOK = iniciarCamara();
+  reiniciarLcd();                       // la cámara consume mucho al arrancar
 
   // WiFi
   mostrar("Conectando WiFi", WIFI_NOMBRE);
@@ -726,7 +773,11 @@ void setup() {
   WiFi.begin(WIFI_NOMBRE, WIFI_CLAVE);
   WiFi.setTxPower(WIFI_POWER_15dBm);
   unsigned long t = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - t < 20000) { delay(300); Serial.print("."); }
+  while (WiFi.status() != WL_CONNECTED && millis() - t < 20000) {
+    delay(300);
+    Serial.print(".");
+    refrescarLcd();                     // el WiFi al conectar mete ruido: la pantalla se corrige sola
+  }
   Serial.println();
 
   reiniciarLcd();
@@ -750,7 +801,9 @@ void setup() {
     mostrar("Ajustando hora", "");
     configTime(-18000, 0, "time.google.com", "pool.ntp.org");   // Colombia UTC-5
     struct tm ti;
-    if (getLocalTime(&ti, 6000)) {
+    bool horaOK = false;
+    for (int i = 0; i < 12 && !horaOK; i++) { horaOK = getLocalTime(&ti, 500); refrescarLcd(); }
+    if (horaOK) {
       rtc.adjust(DateTime(ti.tm_year + 1900, ti.tm_mon + 1, ti.tm_mday, ti.tm_hour, ti.tm_min, ti.tm_sec));
     }
   }
