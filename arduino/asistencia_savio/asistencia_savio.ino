@@ -92,6 +92,7 @@ volatile bool cambioModo = false;              // la tareaRed avisa al loop para
 volatile bool servidorOK = false;              // false = la pantalla muestra "Sin servidor"
 volatile unsigned long ultimaRespuesta = 0;
 volatile unsigned long ignorarModoHasta = 0;   // tras terminar un registro, ignora respuestas viejas
+volatile bool reinicioPedido = false;          // el encargado pidió reiniciar desde el panel
 
 // Mensajes entre el loop y la tareaRed
 struct Peticion  { uint32_t n; char metodo[6]; char ruta[96]; char cuerpo[160]; };
@@ -171,6 +172,7 @@ void consultarModo(HTTPClient &http, WiFiClient &cliente) {
   }
   servidorOK = true;
   ultimaRespuesta = millis();
+  if (r.indexOf("\"reiniciar\":true") >= 0) reinicioPedido = true;   // botón "Reiniciar equipo" del panel
   if ((long)(ignorarModoHasta - millis()) > 0) return;
 
   String m = campoJson(r, "modo");
@@ -423,6 +425,7 @@ void falloRegistro(String l0, String l1) {
   mostrar(l0, l1);
   beepError();
   delay(1500);
+  reiniciarLcd();
 }
 
 // Vuelve a modo asistencia sin esperar a la próxima consulta al servidor
@@ -472,6 +475,7 @@ bool registrarHuella(int id) {
       mostrar("NO COINCIDEN!", "Intente de nuevo");
       beepDenegado();
       delay(1800);
+      reiniciarLcd();
       return false;
     }
   }
@@ -485,6 +489,7 @@ bool registrarHuella(int id) {
   volverAsistencia();
   delay(1500);
   esperarSinDedo(4000);
+  reiniciarLcd();
   return true;
 }
 
@@ -723,6 +728,15 @@ void loop() {
     }
   }
 
+  if (reinicioPedido) {
+    Serial.println("[EQUIPO] Reinicio pedido desde el panel");
+    reiniciarLcd();
+    mostrar("Reiniciando...", "Orden del panel");
+    beepCorto();
+    delay(1200);
+    ESP.restart();
+  }
+
   if (cambioModo) {
     cambioModo = false;
     reiniciarLcd();                       // pantalla limpia al cambiar de modo
@@ -773,6 +787,7 @@ void loop() {
     beepDenegado();
     delay(1200);
     esperarSinDedo(2500);
+    reiniciarLcd();                       // el pitido y el sensor a veces dejan letras raras
     return;
   }
 

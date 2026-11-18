@@ -14,6 +14,31 @@
   });
   window.Equipo.consultar();
 
+  // ---------- Reiniciar el equipo a distancia ----------
+  const btnReiniciar = $('#btnReiniciar');
+  const textoReinicio = $('#hwReinicioTexto');
+  const textoNormal = textoReinicio.textContent;
+  btnReiniciar.addEventListener('click', async () => {
+    const ok = await window.Confirmar({
+      titulo: '¿Reiniciar el equipo?',
+      mensaje: 'El ESP32 se apaga y vuelve a encender solo. Tarda unos 15 segundos y mientras tanto nadie puede marcar.',
+      aceptar: 'Sí, reiniciar'
+    });
+    if (!ok) return;
+    btnReiniciar.disabled = true;
+    try {
+      const r = await fetch('/admin/api/equipo/reiniciar', { method: 'POST' });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.mensaje || 'Error');
+      textoReinicio.textContent = d.enLinea
+        ? 'Orden enviada. En unos segundos la pantalla dirá "Reiniciando..." y el equipo vuelve en unos 15 s.'
+        : 'El equipo está sin conexión: si se conecta en el próximo minuto, se reiniciará. Si no, desconéctelo y conéctelo de nuevo.';
+    } catch (e) {
+      textoReinicio.textContent = 'No se pudo enviar la orden. Revise la conexión e intente de nuevo.';
+    }
+    setTimeout(() => { btnReiniciar.disabled = false; textoReinicio.textContent = textoNormal; }, 30000);
+  });
+
   // ---------- Cifras ----------
   async function cifras() {
     try {

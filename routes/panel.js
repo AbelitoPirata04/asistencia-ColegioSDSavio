@@ -53,6 +53,17 @@ const TRADICIONES = [
 router.get('/', comunes, (req, res) =>
   res.render('inicio', { titulo: 'Inicio', activo: 'inicio', portada: PORTADA, tradiciones: TRADICIONES }));
 
+// ---------- Reiniciar el equipo ESP32 a distancia ----------
+router.post('/admin/api/equipo/reiniciar', async (req, res) => {
+  try {
+    dispositivo.pedirReinicio();
+    const e = await dispositivo.estado();
+    res.json({ ok: true, enLinea: Boolean(e && e.enLinea) });
+  } catch (err) {
+    res.status(500).json({ mensaje: err.message });
+  }
+});
+
 // ---------- Avisos push en el teléfono o PC del encargado ----------
 router.get('/admin/api/push/clave', (req, res) => res.json({ clave: avisosPush.clavePublica }));
 

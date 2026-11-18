@@ -38,7 +38,9 @@ app.get('/api/modo', async (req, res) => {
   try {
     await pool.query('UPDATE estado_dispositivo SET ultima_conexion = NOW() WHERE id_dispositivo = 1');
     const e = await dispositivo.estado();
-    res.status(200).json({ modo: e.modo, id: e.id_huella, nombre_lcd: dispositivo.nombreLcd(e.nombre) });
+    const r = { modo: e.modo, id: e.id_huella, nombre_lcd: dispositivo.nombreLcd(e.nombre) };
+    if (dispositivo.tomarReinicio()) r.reiniciar = true;   // el encargado pidió reiniciar desde el panel
+    res.status(200).json(r);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

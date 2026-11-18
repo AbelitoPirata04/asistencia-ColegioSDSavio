@@ -662,6 +662,11 @@ small.manual{display:inline-block;margin-top:2px;padding:0 6px;border-radius:4px
 .hw-estado strong{font-size:15px;font-weight:700}
 .hw-estado small{grid-column:1/-1;font-size:11.5px;color:rgba(255,255,255,.7)}
 .hw-estado .equipo-tarjeta__luz{border:2px solid rgba(255,255,255,.85)}
+.hw-reinicio{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;margin-top:14px}
+.hw-reinicio span{font-size:12.5px;color:rgba(255,255,255,.78);max-width:420px}
+.btn--claro{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4);color:#fff}
+.btn--claro:hover{background:rgba(255,255,255,.22)}
+.btn--claro:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .hw-cifras{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:26px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.2)}
 .hw-cifras dt{font-size:12px;color:rgba(255,255,255,.72)}
 .hw-cifras dd{font:800 28px/1.1 var(--titulos);color:#FFD21F;font-variant-numeric:tabular-nums}

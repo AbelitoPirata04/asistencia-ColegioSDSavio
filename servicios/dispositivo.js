@@ -98,4 +98,17 @@ function nombreLcd(nombre) {
     .slice(0, 16);
 }
 
-module.exports = { estado, ponerModo, volverAsistencia, asignarTarjeta, nombreLcd };
+// Reinicio a distancia: el panel deja la orden y el equipo la recoge en su próxima consulta (cada 2 s).
+// La orden vence en 1 minuto: si el equipo estaba apagado, no se reinicia por sorpresa horas después.
+const VIGENCIA_REINICIO_MS = 60 * 1000;
+let reinicioPedido = 0;
+
+function pedirReinicio() { reinicioPedido = Date.now(); }
+
+function tomarReinicio() {
+  const vigente = reinicioPedido && Date.now() - reinicioPedido < VIGENCIA_REINICIO_MS;
+  reinicioPedido = 0;
+  return Boolean(vigente);
+}
+
+module.exports = { estado, ponerModo, volverAsistencia, asignarTarjeta, nombreLcd, pedirReinicio, tomarReinicio };
