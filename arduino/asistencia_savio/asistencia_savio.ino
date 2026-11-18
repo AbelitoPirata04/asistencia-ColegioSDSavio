@@ -42,6 +42,7 @@
 String SERVIDOR = SERVIDOR_URL;
 
 #define ENVIAR_FOTO     true    // false = no manda fotos al servidor
+#define CAMARA_GIRADA   true    // true = la cámara está montada al revés: gira la foto 180°
 #define BUZZER_ACTIVO   false   // true = buzzer activo, false = buzzer pasivo
 #define LECTURAS_HUELLA 2       // veces que se pone el dedo al registrar (2 = huella más completa)
 
@@ -347,6 +348,8 @@ bool iniciarCamara() {
     s->set_whitebal(s, 1); s->set_awb_gain(s, 1); s->set_gain_ctrl(s, 1);
     s->set_exposure_ctrl(s, 1); s->set_aec2(s, 1); s->set_lenc(s, 0);
     s->set_brightness(s, 1); s->set_saturation(s, 0);
+    s->set_vflip(s, CAMARA_GIRADA ? 1 : 0);     // voltea de arriba a abajo
+    s->set_hmirror(s, CAMARA_GIRADA ? 1 : 0);   // y de izquierda a derecha (juntos = 180°)
   }
   return true;
 }
