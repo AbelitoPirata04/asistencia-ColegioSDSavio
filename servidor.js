@@ -21,6 +21,8 @@ app.use('/api', cors());                     // solo la API del equipo ESP32; el
 app.use(express.json({ limit: '10mb' }));
 app.use('/api/fotos', express.raw({ type: 'image/jpeg', limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));   // CSS, JS, imágenes (sin sesión)
+// La app Android (.apk) comprueba aquí que esta página es suya, para abrirse sin barra de dirección
+app.use('/.well-known', express.static(path.join(__dirname, 'public', 'well-known')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "co.edu.savio.asistencia",
+        "sha256_cert_fingerprints": ["44:9B:A2:F2:BB:EF:FF:03:D6:DA:EA:92:2A:9D:6A:66:A6:B1:37:76:8B:1D:17:90:06:4C:3C:38:EE:BB:7D:58"]
+      }
+    }]
