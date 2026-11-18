@@ -24,7 +24,6 @@
 */
 
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 #include <RTClib.h>
 #include <Adafruit_Fingerprint.h>
 #include <SPI.h>
@@ -77,7 +76,6 @@ String SERVIDOR = SERVIDOR_URL;
 #define CAM_PCLK  13
 
 // ======================= OBJETOS =======================
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 RTC_DS3231 rtc;
 HardwareSerial fSerial(1);
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&fSerial);
@@ -253,42 +251,120 @@ int pedir(const char *metodo, const String &ruta, const String &cuerpo, String &
   return -200;   // la red no respondió a tiempo
 }
 
-// ======================= PANTALLA =======================
-String lcdTexto[2] = {"", ""};   // lo que hay en pantalla, para no reescribir si no cambia
+// ======================= PANTALLA LCD 16x2 (I2C) =======================
+// Controlador propio en vez de la librería LiquidCrystal_I2C, para que el ruido eléctrico
+// (WiFi, cámara, pitido del buzzer, sensor de huella) no deje letras raras:
+//  - cada letra viaja en UN solo envío I2C (la librería usaba 6, y el ruido podía cortar uno a la mitad);
+//  - antes de escribir una pantalla nueva se re-sincroniza el chip de la LCD y se escriben las 32 casillas;
+//  - cada 2 s se vuelve a pintar lo mismo: si algo se dañó, se corrige solo y no se nota;
+//  - si el bus I2C falla, se reinicia.
+#define LCD_DIR 0x27     // dirección I2C del módulo de la pantalla
+#define LCD_LUZ 0x08     // bit de la luz de fondo (siempre encendida)
+#define LCD_EN  0x04     // bit "enable": la LCD lee el dato al bajar
+#define LCD_RS  0x01     // 0 = instrucción, 1 = letra
 
-void lcdLinea(int fila, String texto) {
-  while (texto.length() < 16) texto += " ";
-  if (texto.length() > 16) texto = texto.substring(0, 16);
-  if (texto == lcdTexto[fila]) return;
-  lcd.setCursor(0, fila);
-  lcd.print(texto);
-  lcdTexto[fila] = texto;
+String lcdTexto[2] = {"                ", "                "};   // lo que debe verse en pantalla
+bool lcdFallo = false;
+
+bool lcdI2C(const uint8_t *b, size_t n) {
+  Wire.beginTransmission(LCD_DIR);
+  Wire.write(b, n);
+  if (Wire.endTransmission() != 0) { lcdFallo = true; return false; }
+  return true;
+}
+
+// Medio byte (solo para sincronizar el chip)
+void lcdMedioByte(uint8_t v) {
+  uint8_t b[3] = { (uint8_t)(v | LCD_LUZ), (uint8_t)(v | LCD_LUZ | LCD_EN), (uint8_t)(v | LCD_LUZ) };
+  lcdI2C(b, 3);
+}
+
+// Un byte completo (instrucción o letra) en un solo envío
+void lcdEnviar(uint8_t valor, bool esLetra) {
+  uint8_t rs = esLetra ? LCD_RS : 0;
+  uint8_t alto = (valor & 0xF0) | LCD_LUZ | rs;
+  uint8_t bajo = ((valor << 4) & 0xF0) | LCD_LUZ | rs;
+  uint8_t b[6] = { alto, (uint8_t)(alto | LCD_EN), alto, bajo, (uint8_t)(bajo | LCD_EN), bajo };
+  lcdI2C(b, 6);
+  delayMicroseconds(60);
+}
+
+// Pone el chip en modo 4 bits desde CUALQUIER estado (aunque esté desfasado por ruido).
+// Es la secuencia del fabricante (HD44780); no borra ni apaga la luz. Tarda unos 6 ms.
+void lcdSincronizar() {
+  lcdMedioByte(0x30); delay(5);
+  lcdMedioByte(0x30); delayMicroseconds(200);
+  lcdMedioByte(0x30); delayMicroseconds(200);
+  lcdMedioByte(0x20); delayMicroseconds(200);
+  lcdEnviar(0x28, false);   // 4 bits, 2 líneas, letra 5x8
+  lcdEnviar(0x0C, false);   // pantalla encendida, sin cursor
+  lcdEnviar(0x06, false);   // escribe de izquierda a derecha
+}
+
+// 16 casillas exactas y sin tildes (la LCD no las tiene)
+String lcdAjustar(String t) {
+  const char *con[] = {"á","é","í","ó","ú","Á","É","Í","Ó","Ú","ñ","Ñ","ü","Ü"};
+  const char *sin[] = {"a","e","i","o","u","A","E","I","O","U","n","N","u","U"};
+  for (int i = 0; i < 14; i++) t.replace(con[i], sin[i]);
+  String s = "";
+  for (unsigned int i = 0; i < t.length() && s.length() < 16; i++) {
+    char c = t[i];
+    s += (c >= 32 && c <= 126) ? c : ' ';
+  }
+  while (s.length() < 16) s += " ";
+  return s;
+}
+
+// Escribe las dos líneas completas
+void lcdPintar() {
+  if (lcdFallo) {                       // el bus I2C se trabó: se reinicia
+    Wire.end();
+    delay(5);
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(100000);
+    Wire.setTimeOut(50);
+    lcdFallo = false;
+  }
+  lcdSincronizar();
+  for (int f = 0; f < 2; f++) {
+    lcdEnviar(0x80 | (f ? 0x40 : 0x00), false);   // inicio de la línea
+    for (int i = 0; i < 16; i++) lcdEnviar((uint8_t)lcdTexto[f][i], true);
+  }
+  ultimoRefrescoLcd = millis();
 }
 
 void mostrar(String l0, String l1) {
-  lcdLinea(0, l0);
-  lcdLinea(1, l1);
+  l0 = lcdAjustar(l0);
+  l1 = lcdAjustar(l1);
+  if (l0 == lcdTexto[0] && l1 == lcdTexto[1] && !lcdFallo) return;   // ya está en pantalla
+  lcdTexto[0] = l0;
+  lcdTexto[1] = l1;
+  lcdPintar();
 }
 
-// Reinicia el bus I2C y la LCD (limpia la "basura" que a veces deja el ruido del WiFi)
+// Se llama seguido: cada 2 s repinta lo mismo para corregir cualquier daño
+void refrescarLcd() {
+  if (lcdFallo || millis() - ultimoRefrescoLcd >= 2000) lcdPintar();
+}
+
+// Recuperación completa: reinicia el bus I2C y repinta
 void reiniciarLcd() {
-  Wire.end();
-  delay(10);
-  Wire.begin(SDA_PIN, SCL_PIN);
-  Wire.setClock(100000);
-  Wire.setTimeOut(100);
-  lcd.init();
-  lcd.backlight();
-  lcd.clear();
-  lcdTexto[0] = lcdTexto[1] = "";
-  ultimoRefrescoLcd = millis();
+  lcdFallo = true;
+  lcdPintar();
 }
 
 String dosDigitos(int n) { return (n < 10 ? "0" : "") + String(n); }
 
+// Hora del reloj DS3231: se lee una vez por segundo y se descarta si llega dañada
 String horaActual() {
-  DateTime now = rtc.now();
-  return dosDigitos(now.hour()) + ":" + dosDigitos(now.minute());
+  static String hora = "--:--";
+  static unsigned long ultimaLectura = 0;
+  if (ultimaLectura == 0 || millis() - ultimaLectura >= 1000) {
+    ultimaLectura = millis();
+    DateTime now = rtc.now();
+    if (now.hour() <= 23 && now.minute() <= 59) hora = dosDigitos(now.hour()) + ":" + dosDigitos(now.minute());
+  }
+  return hora;
 }
 
 // ======================= BUZZER =======================
@@ -322,8 +398,8 @@ bool iniciarCamara() {
   config.pin_pclk = CAM_PCLK;
   config.pin_vsync = CAM_VSYNC;
   config.pin_href = CAM_HREF;
-  config.pin_sscb_sda = CAM_SIOD;   // si tu core da error aquí, cambia a pin_sccb_sda
-  config.pin_sscb_scl = CAM_SIOC;   // y a pin_sccb_scl
+  config.pin_sccb_sda = CAM_SIOD;
+  config.pin_sccb_scl = CAM_SIOC;
   config.pin_pwdn = CAM_PWDN;
   config.pin_reset = CAM_RESET;
   config.xclk_freq_hz = 20000000;
@@ -399,6 +475,7 @@ bool esperarDedo(unsigned long ms) {
   unsigned long t = millis();
   while (millis() - t < ms) {
     if (finger.getImage() == FINGERPRINT_OK) return true;
+    refrescarLcd();
     delay(40);
   }
   return false;
@@ -408,6 +485,7 @@ bool esperarSinDedo(unsigned long ms) {
   unsigned long t = millis();
   while (millis() - t < ms) {
     if (finger.getImage() == FINGERPRINT_NOFINGER) return true;
+    refrescarLcd();
     delay(40);
   }
   return false;
@@ -634,9 +712,8 @@ void setup() {
 
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000);
-  Wire.setTimeOut(100);
-  lcd.init();
-  lcd.backlight();
+  Wire.setTimeOut(50);
+  reiniciarLcd();
 
   // Cámara primero (antes del WiFi)
   mostrar("Iniciando...", "Camara");
@@ -749,10 +826,12 @@ void loop() {
 
   int modo = modoActual;
 
-  // Cada 20 s, en cualquier modo: limpia la pantalla (el ruido de la fuente o del WiFi
-  // a veces deja letras raras) y revisa que el lector de tarjetas siga respondiendo
-  if (millis() - ultimoRefrescoLcd > 20000) {
-    reiniciarLcd();
+  // En cualquier modo: cada 2 s se repinta la pantalla (corrige letras raras) y
+  // cada 20 s se revisa que el lector de tarjetas siga respondiendo
+  refrescarLcd();
+  static unsigned long ultimaRevisionRfid = 0;
+  if (millis() - ultimaRevisionRfid > 20000) {
+    ultimaRevisionRfid = millis();
     revisarLectorRfid();
   }
 
