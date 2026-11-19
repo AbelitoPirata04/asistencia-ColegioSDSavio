@@ -196,8 +196,9 @@ CREATE TABLE `registros_asistencia` (
 
 LOCK TABLES `horarios` WRITE;
 /*!40000 ALTER TABLE `horarios` DISABLE KEYS */;
-INSERT INTO `horarios` VALUES (1,'Jornada Mañana','06:45:00','13:00:00',10);
-INSERT INTO `horarios` VALUES (2,'Jornada Tarde','13:00:00','18:30:00',10);
+INSERT INTO `horarios` VALUES (1,'Primaria','07:00:00','12:00:00',10);
+INSERT INTO `horarios` VALUES (2,'Preescolar','13:30:00','17:30:00',10);
+INSERT INTO `horarios` VALUES (3,'Secundaria','07:00:00','13:00:00',10);
 /*!40000 ALTER TABLE `horarios` ENABLE KEYS */;
 UNLOCK TABLES;
 
