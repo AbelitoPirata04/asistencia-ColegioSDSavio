@@ -387,7 +387,7 @@ async function validar(b) {
     return { v };
   }
 
-  // Docente: nivel obligatorio; grado (preescolar/primaria) o asignatura (bachillerato)
+  // Docente: nivel obligatorio; grado (preescolar/primaria) o asignatura (secundaria)
   const [niv] = await pool.query('SELECT por_asignatura FROM niveles WHERE id_nivel = ?', [numero(b.id_nivel)]);
   if (!niv.length) return { error: 'Seleccione el nivel en el que enseña el docente.' };
   v.nivel = numero(b.id_nivel);

@@ -1,6 +1,6 @@
 -- Migración 08: jornadas oficiales del colegio (una por nivel).
 --   Primaria   07:00 a 12:00
---   Secundaria 07:00 a 13:00 (bachillerato)
+--   Secundaria 07:00 a 13:00
 --   Preescolar 13:30 a 17:30
 USE bd_asistencia_savio;
 
@@ -9,3 +9,6 @@ UPDATE horarios SET nombre_jornada = 'Preescolar', hora_entrada = '13:30', hora_
 INSERT INTO horarios (nombre_jornada, hora_entrada, hora_salida, minutos_tolerancia)
 SELECT 'Secundaria', '07:00', '13:00', 10 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM horarios WHERE nombre_jornada = 'Secundaria');
+
+-- El nivel "Bachillerato" se llama "Secundaria", igual que su jornada
+UPDATE niveles SET nombre = 'Secundaria' WHERE id_nivel = 3;

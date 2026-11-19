@@ -7,7 +7,7 @@
   const { grados, seleccionado } = JSON.parse($('#datosGrados').textContent);
   let gradoElegido = seleccionado;
 
-  // ---- Docente: el nivel decide si se pide grado (preescolar/primaria) o asignatura (bachillerato) ----
+  // ---- Docente: el nivel decide si se pide grado (preescolar/primaria) o asignatura (secundaria) ----
   function pintarNivel() {
     const op = $('#selNivel').selectedOptions[0];
     const idNivel = op ? op.value : '';

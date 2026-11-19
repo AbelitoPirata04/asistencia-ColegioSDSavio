@@ -206,7 +206,7 @@ LOCK TABLES `niveles` WRITE;
 /*!40000 ALTER TABLE `niveles` DISABLE KEYS */;
 INSERT INTO `niveles` VALUES (1,'Preescolar',1,0);
 INSERT INTO `niveles` VALUES (2,'Primaria',2,0);
-INSERT INTO `niveles` VALUES (3,'Bachillerato',3,1);
+INSERT INTO `niveles` VALUES (3,'Secundaria',3,1);
 /*!40000 ALTER TABLE `niveles` ENABLE KEYS */;
 UNLOCK TABLES;
 
