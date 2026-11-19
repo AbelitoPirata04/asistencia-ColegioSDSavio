@@ -99,7 +99,9 @@
   });
 
   // Aviso al volver de guardar (y se limpia la dirección para que no se repita al recargar)
-  if (new URLSearchParams(location.search).get('guardado') === '1') {
+  const parametros = new URLSearchParams(location.search);
+  if (parametros.get('guardado') === '1' || parametros.get('eliminado')) {
+    if (parametros.get('eliminado')) $('#avisoLista').textContent = `${parametros.get('eliminado')} fue eliminado del sistema.`;
     $('#avisoLista').hidden = false;
     history.replaceState(null, '', location.pathname);
     setTimeout(() => { $('#avisoLista').hidden = true; }, 5000);

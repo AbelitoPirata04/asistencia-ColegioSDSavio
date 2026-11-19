@@ -102,6 +102,25 @@
     catch (err) { aviso(err.message, 'error'); }
   }
 
+  // Eliminar para siempre (con su historial). Para solo desactivar está "Dar de baja".
+  $('#fEliminar').addEventListener('click', async () => {
+    const n = (m.registros || []).length;
+    const ok = await window.Confirmar({
+      titulo: `¿Eliminar a ${m.nombre_completo} del sistema?`,
+      mensaje: 'Se borra para siempre: sus datos, su huella y su tarjeta, TODO su historial de asistencias' +
+        (n ? ' (con las fotos)' : '') + ' y sus novedades. No se puede deshacer. ' +
+        'Si solo ya no trabaja en el colegio y quiere conservar su historial, use "Dar de baja".',
+      aceptar: 'Sí, eliminar para siempre', cancelar: 'No, cancelar', peligro: true
+    });
+    if (!ok) return;
+    try {
+      await api(`/admin/api/personal/${ID}`, 'DELETE');
+      location.href = '/personal?eliminado=' + encodeURIComponent(m.nombre_completo);
+    } catch (e) {
+      aviso(e.message, 'error');
+    }
+  });
+
   $('#fEstado').addEventListener('click', async () => {
     const baja = !!m.activo;
     const ok = await window.Confirmar(baja ? {

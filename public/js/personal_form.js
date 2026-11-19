@@ -25,6 +25,7 @@
     const directivo = form.elements.rol.value === 'directivo';
     $('#camposDocente').hidden = directivo;
     $('#camposDirectivo').hidden = !directivo;
+    $('#campoJornada').hidden = directivo;   // los directivos son de toda la institución
   }
 
   $('#selNivel').addEventListener('change', () => { gradoElegido = null; pintarNivel(); });
@@ -75,7 +76,7 @@
 
     const cuerpo = Object.fromEntries(new FormData(form));
     // Solo se envía lo que corresponde al rol y nivel elegidos
-    if (cuerpo.rol === 'directivo') { cuerpo.id_nivel = cuerpo.id_grado = cuerpo.id_asignatura = null; }
+    if (cuerpo.rol === 'directivo') { cuerpo.id_nivel = cuerpo.id_grado = cuerpo.id_asignatura = cuerpo.id_horario = null; }
     else {
       cuerpo.cargo_asignatura = null;
       if ($('#campoGrado').hidden) cuerpo.id_grado = null;

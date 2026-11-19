@@ -27,10 +27,13 @@
         <% } else { %>
           <div class="datos__ancho"><dt>Cargo</dt><dd><%= m.detalle || 'Sin cargo' %></dd></div>
         <% } %>
-        <div><dt>Jornada</dt><dd><%= m.nombre_jornada ? m.nombre_jornada + ' · ' + m.hora_entrada + ' a ' + m.hora_salida : 'Sin jornada' %></dd></div>
+        <div><dt>Jornada</dt><dd><%= m.rol === 'directivo' ? 'Toda la institución' : (m.nombre_jornada ? m.nombre_jornada + ' · ' + m.hora_entrada + ' a ' + m.hora_salida : 'Sin jornada') %></dd></div>
         <div><dt>Estado</dt><dd id="dEstado"><span class="estado <%= m.activo ? 'estado--activo' : 'estado--baja' %>"><%= m.activo ? 'Activo' : 'Dado de baja' %></span></dd></div>
       </dl>
-      <button type="button" class="btn <%= m.activo ? 'btn--peligro' : '' %>" id="fEstado"><%= m.activo ? 'Dar de baja' : 'Reactivar' %></button>
+      <div class="ficha__estado-botones">
+        <button type="button" class="btn <%= m.activo ? 'btn--peligro' : '' %>" id="fEstado"><%= m.activo ? 'Dar de baja' : 'Reactivar' %></button>
+        <button type="button" class="btn btn--peligro" id="fEliminar">Eliminar del sistema</button>
+      </div>
     </section>
   </div>
 

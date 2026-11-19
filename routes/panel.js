@@ -383,6 +383,7 @@ async function validar(b) {
   if (b.rol === 'directivo') {
     v.cargo = limpiar(b.cargo_asignatura) || null;
     if (!v.cargo) return { error: 'Escriba el cargo del directivo (ej. Rector, Coordinador).' };
+    v.horario = null;   // los directivos son de toda la institución: sin jornada ni control de retardo
     return { v };
   }
 
@@ -465,6 +466,34 @@ router.put('/admin/api/personal/:id', async (req, res) => {
        v.cargo, v.nivel, v.grado, v.asignatura, v.horario, req.params.id]
     );
     res.json({ ok: true });
+  } catch (e) { responderError(res, e); }
+});
+
+// ----- Eliminar del sistema (para siempre) -----
+// Borra a la persona y, por las llaves de la base de datos, también su historial de asistencias,
+// sus novedades y sus credenciales. Las fotos se borran del disco. Para solo desactivar: "Dar de baja".
+router.delete('/admin/api/personal/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const [[p]] = await pool.query(
+      "SELECT nombre_completo, foto_perfil FROM personal WHERE id_personal = ? AND rol IN ('docente','directivo')", [id]);
+    if (!p) return res.status(404).json({ mensaje: 'Miembro no encontrado.' });
+
+    const [fotos] = await pool.query(
+      'SELECT ruta_fotografia, ruta_foto_salida FROM registros_asistencia WHERE id_personal = ?', [id]);
+    // Si el equipo estaba registrando la huella o tarjeta de esta persona, vuelve a modo asistencia
+    await pool.query(
+      "UPDATE estado_dispositivo SET modo_actual = 'asistencia', id_personal_enrolando = NULL, id_huella_asignar = NULL WHERE id_personal_enrolando = ?", [id]);
+    await pool.query("DELETE FROM personal WHERE id_personal = ? AND rol IN ('docente','directivo')", [id]);
+
+    // Fotos del equipo (solo dentro de uploads/) y foto de perfil
+    const carpeta = path.join(__dirname, '..', 'uploads');
+    fotos.forEach((f) => [f.ruta_fotografia, f.ruta_foto_salida].forEach((r) => {
+      if (r) fs.unlink(path.join(carpeta, path.basename(r)), () => {});
+    }));
+    borrarArchivoPerfil(p.foto_perfil);
+    console.log(`🗑️  Eliminado del sistema: ${p.nombre_completo} (${fotos.length} registros)`);
+    res.json({ ok: true, registros: fotos.length });
   } catch (e) { responderError(res, e); }
 });
 
