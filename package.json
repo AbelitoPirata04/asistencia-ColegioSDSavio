@@ -4,7 +4,8 @@
   "description": "Control de asistencia biométrico y fotográfico - Colegio Santo Domingo Savio",
   "main": "servidor.js",
   "scripts": {
-    "start": "node servidor.js"
+    "start": "node servidor.js",
+    "desplegar": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desplegar.ps1"
   },
   "keywords": [],
   "author": "",
