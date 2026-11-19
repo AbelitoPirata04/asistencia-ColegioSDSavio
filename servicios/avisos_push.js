@@ -64,7 +64,7 @@ async function enviar(aviso, soloPersona) {
   const [subs] = await pool.query(
     `SELECT s.id_suscripcion, s.endpoint, s.p256dh, s.auth
        FROM suscripciones_push s JOIN personal p ON p.id_personal = s.id_personal
-      WHERE p.activo = 1 AND p.rol = 'administrador' ${soloPersona ? 'AND p.id_personal = ?' : ''}`, soloPersona ? [soloPersona] : []);
+      WHERE p.activo = 1 AND (p.rol = 'administrador' OR p.acceso_panel = 1) ${soloPersona ? 'AND p.id_personal = ?' : ''}`, soloPersona ? [soloPersona] : []);
   const datos = JSON.stringify(aviso);
   await Promise.all(subs.map(async (s) => {
     try {

@@ -47,7 +47,10 @@ function cerrar(res) {
   res.clearCookie(COOKIE, { path: '/' });
 }
 
-// Lee la cookie y deja en req.usuario al administrador (o null)
+// Quién puede entrar al panel: los encargados (rol administrador) y los directivos a los que se les dio acceso
+const CON_ACCESO = "(rol = 'administrador' OR acceso_panel = 1)";
+
+// Lee la cookie y deja en req.usuario a quien tiene acceso (o null)
 async function leerUsuario(req, res, next) {
   req.usuario = null;
   const token = leerCookies(req)[COOKIE];
@@ -58,7 +61,7 @@ async function leerUsuario(req, res, next) {
       if (e > Date.now()) {
         const [[usr]] = await pool.query(
           `SELECT id_personal, nombre_completo, correo, contrasena, debe_cambiar_clave
-             FROM personal WHERE id_personal = ? AND rol = 'administrador' AND activo = 1`, [u]);
+             FROM personal WHERE id_personal = ? AND ${CON_ACCESO} AND activo = 1`, [u]);
         const esperada = usr && firmar(datos, usr.contrasena);
         if (esperada && esperada.length === firma.length &&
             crypto.timingSafeEqual(Buffer.from(esperada), Buffer.from(firma))) {
@@ -91,4 +94,4 @@ function exigir(req, res, next) {
   next();
 }
 
-module.exports = { crear, cerrar, leerUsuario, exigir };
+module.exports = { crear, cerrar, leerUsuario, exigir, CON_ACCESO };

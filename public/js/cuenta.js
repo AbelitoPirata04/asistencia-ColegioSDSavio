@@ -60,7 +60,7 @@
         <span class="sigla">${esc(siglas(u.nombre_completo))}</span>
         <div class="encargado__datos">
           <strong>${esc(u.nombre_completo)}${u.soy_yo ? ' <span class="encargado__yo">Usted</span>' : ''}</strong>
-          <small>${esc(u.correo)} · ${ultimo}${u.debe_cambiar_clave ? ' · <b class="encargado__temporal">Contraseña temporal</b>' : ''}</small>
+          <small>${u.rol === 'directivo' ? esc(u.cargo || 'Directivo') + ' · ' : ''}${esc(u.correo)} · ${ultimo}${u.debe_cambiar_clave ? ' · <b class="encargado__temporal">Contraseña temporal</b>' : ''}</small>
         </div>
         ${u.soy_yo ? '' : `<div class="encargado__acciones">
           <button type="button" class="btn btn--chico" data-restablecer="${u.id_personal}" data-nombre="${esc(u.nombre_completo)}">Restablecer contraseña</button>
@@ -89,6 +89,27 @@
       guardar: (d) => enviar('/admin/api/encargados', 'POST', d)
     });
     if (ok) { avisar('Acceso creado.'); cargar(); }
+  });
+
+  $('#btnDirectivo').addEventListener('click', async () => {
+    let directivos = [];
+    try { directivos = await (await fetch('/admin/api/encargados/directivos', { cache: 'no-store' })).json(); } catch (e) { /* sin lista */ }
+    if (!directivos.length) { avisar('Todos los directivos activos ya tienen acceso.'); return; }
+    const ok = await window.VentanaFormulario({
+      titulo: 'Dar acceso a un directivo',
+      subtitulo: 'Sigue registrado como directivo y además podrá entrar al panel.',
+      boton: 'Dar acceso',
+      cuerpo: `
+        <label>Directivo
+          <select name="id_personal" required>
+            ${directivos.map((d) => `<option value="${d.id_personal}">${esc(d.nombre_completo)}${d.cargo ? ' · ' + esc(d.cargo) : ''}</option>`).join('')}
+          </select>
+        </label>
+        <p class="ayuda">Entrará con el correo que tiene registrado en su ficha.</p>
+        ${campoClave('Contraseña temporal')}`,
+      guardar: (d) => enviar('/admin/api/encargados/directivo', 'POST', d)
+    });
+    if (ok) { avisar('Acceso dado.'); cargar(); }
   });
 
   lista.addEventListener('click', async (e) => {

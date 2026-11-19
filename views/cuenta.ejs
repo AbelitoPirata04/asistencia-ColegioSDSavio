@@ -45,9 +45,12 @@
   <section class="tarjeta cuenta__equipo">
     <header class="tarjeta__cabeza tarjeta__cabeza--herramientas">
       <h2><img class="ico ico--chico" src="/img/iconos/docente.png" alt="">Encargados con acceso</h2>
-      <button type="button" class="btn btn--chico" id="btnNuevoEncargado">Dar acceso</button>
+      <div class="fila">
+        <button type="button" class="btn btn--chico" id="btnDirectivo">Dar acceso a un directivo</button>
+        <button type="button" class="btn btn--chico" id="btnNuevoEncargado">Nuevo encargado</button>
+      </div>
     </header>
-    <p class="cuenta__nota ayuda">Solo estas personas pueden entrar al panel. Si alguien olvida su contraseña, restablézcala aquí: le quedará una temporal que deberá cambiar al ingresar.</p>
+    <p class="cuenta__nota ayuda">Solo estas personas pueden entrar al panel. A un directivo se le da acceso sin crearlo de nuevo: sigue marcando asistencia como siempre. Si alguien olvida su contraseña, restablézcala aquí: le quedará una temporal que deberá cambiar al ingresar.</p>
     <ul class="encargados" id="encargados"><li class="ayuda">Cargando…</li></ul>
   </section>
   <% } %>

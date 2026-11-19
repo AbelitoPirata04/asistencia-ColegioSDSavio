@@ -17,7 +17,7 @@ const { pool } = require('../config/conexion_bd');
     const hash = await bcrypt.hash(clave, 10);
     const [r] = await pool.query(
       `UPDATE personal SET contrasena = ?, debe_cambiar_clave = 1, activo = 1
-        WHERE correo = ? AND rol = 'administrador'`, [hash, correo.trim().toLowerCase()]);
+        WHERE correo = ? AND (rol = 'administrador' OR acceso_panel = 1)`, [hash, correo.trim().toLowerCase()]);
     console.log(r.affectedRows
       ? `Listo. ${correo} ya puede ingresar con la contraseña temporal (el panel le pedirá cambiarla).`
       : `No hay ningún encargado con el correo ${correo}.`);

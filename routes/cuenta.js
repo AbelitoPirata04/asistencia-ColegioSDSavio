@@ -1,4 +1,4 @@
-// Ingreso al panel, "Mi cuenta" y encargados con acceso (solo rol administrador).
+// Ingreso al panel, "Mi cuenta" y personas con acceso (encargados y directivos con acceso).
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/conexion_bd');
@@ -7,6 +7,7 @@ const dispositivo = require('../servicios/dispositivo');
 
 const router = express.Router();
 const CLAVE_MINIMA = 8;
+const { CON_ACCESO } = sesion;
 
 // Solo deja volver a direcciones del propio panel (evita redirecciones a otros sitios)
 const destinoSeguro = (v) => (typeof v === 'string' && /^\/(?!\/)/.test(v) ? v : '/');
@@ -43,7 +44,7 @@ router.post('/login', async (req, res) => {
   try {
     const [[usr]] = await pool.query(
       `SELECT id_personal, nombre_completo, contrasena, debe_cambiar_clave
-         FROM personal WHERE correo = ? AND rol = 'administrador' AND activo = 1`, [correo]);
+         FROM personal WHERE correo = ? AND ${CON_ACCESO} AND activo = 1`, [correo]);
     // Mismo mensaje si el correo no existe o la clave está mal: no se revela cuál de los dos falló
     if (!usr || !(await claveCorrecta(usr, clave))) {
       return res.status(401).json({ mensaje: 'El correo o la contraseña no son correctos.' });
@@ -101,8 +102,8 @@ router.post('/admin/api/cuenta/clave', async (req, res) => {
 router.get('/admin/api/encargados', async (req, res) => {
   try {
     const [f] = await pool.query(`
-      SELECT id_personal, nombre_completo, correo, ultimo_ingreso, debe_cambiar_clave
-        FROM personal WHERE rol = 'administrador' AND activo = 1 ORDER BY nombre_completo`);
+      SELECT id_personal, nombre_completo, correo, ultimo_ingreso, debe_cambiar_clave, rol, cargo_asignatura AS cargo
+        FROM personal WHERE ${CON_ACCESO} AND activo = 1 ORDER BY nombre_completo`);
     res.json(f.map((x) => ({ ...x, soy_yo: x.id_personal === req.usuario.id_personal })));
   } catch (e) { res.status(500).json({ mensaje: e.message }); }
 });
@@ -128,6 +129,32 @@ router.post('/admin/api/encargados', async (req, res) => {
   }
 });
 
+// Directivos ya registrados que todavía no tienen acceso (para elegir en "Dar acceso a un directivo")
+router.get('/admin/api/encargados/directivos', async (req, res) => {
+  try {
+    const [f] = await pool.query(`
+      SELECT id_personal, nombre_completo, correo, cargo_asignatura AS cargo
+        FROM personal WHERE rol = 'directivo' AND activo = 1 AND acceso_panel = 0 ORDER BY nombre_completo`);
+    res.json(f);
+  } catch (e) { res.status(500).json({ mensaje: e.message }); }
+});
+
+// Dar acceso a un directivo: sigue siendo directivo (marca asistencia) y además entra al panel
+router.post('/admin/api/encargados/directivo', async (req, res) => {
+  const id = Number(req.body.id_personal);
+  const clave = String(req.body.clave || '');
+  if (!id) return res.status(400).json({ mensaje: 'Elija el directivo.' });
+  if (clave.length < CLAVE_MINIMA) return res.status(400).json({ mensaje: `La contraseña temporal debe tener al menos ${CLAVE_MINIMA} caracteres.` });
+  try {
+    const hash = await bcrypt.hash(clave, 10);
+    const [r] = await pool.query(
+      `UPDATE personal SET acceso_panel = 1, contrasena = ?, debe_cambiar_clave = 1
+        WHERE id_personal = ? AND rol = 'directivo' AND activo = 1`, [hash, id]);
+    if (!r.affectedRows) return res.status(404).json({ mensaje: 'Directivo no encontrado o dado de baja.' });
+    res.status(201).json({ ok: true });
+  } catch (e) { res.status(500).json({ mensaje: e.message }); }
+});
+
 // Restablecer la contraseña de otro encargado (le queda temporal: debe cambiarla al entrar)
 router.post('/admin/api/encargados/:id/clave', async (req, res) => {
   const clave = String(req.body.clave || '');
@@ -136,19 +163,20 @@ router.post('/admin/api/encargados/:id/clave', async (req, res) => {
   try {
     const hash = await bcrypt.hash(clave, 10);
     const [r] = await pool.query(
-      "UPDATE personal SET contrasena = ?, debe_cambiar_clave = 1 WHERE id_personal = ? AND rol = 'administrador'", [hash, req.params.id]);
+      `UPDATE personal SET contrasena = ?, debe_cambiar_clave = 1 WHERE id_personal = ? AND ${CON_ACCESO}`, [hash, req.params.id]);
     if (!r.affectedRows) return res.status(404).json({ mensaje: 'Encargado no encontrado.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ mensaje: e.message }); }
 });
 
-// Quitar el acceso (no se borra: se desactiva, por si hay que reactivarlo)
+// Quitar el acceso. Encargado: se desactiva (no se borra). Directivo: sigue activo, solo pierde el panel.
 router.delete('/admin/api/encargados/:id', async (req, res) => {
   if (Number(req.params.id) === req.usuario.id_personal) return res.status(400).json({ mensaje: 'No puede quitarse el acceso a sí mismo.' });
   try {
-    const [[{ n }]] = await pool.query("SELECT COUNT(*) AS n FROM personal WHERE rol = 'administrador' AND activo = 1");
-    if (n <= 1) return res.status(400).json({ mensaje: 'Debe quedar al menos un encargado con acceso.' });
+    const [[{ n }]] = await pool.query(`SELECT COUNT(*) AS n FROM personal WHERE ${CON_ACCESO} AND activo = 1`);
+    if (n <= 1) return res.status(400).json({ mensaje: 'Debe quedar al menos una persona con acceso.' });
     await pool.query("UPDATE personal SET activo = 0 WHERE id_personal = ? AND rol = 'administrador'", [req.params.id]);
+    await pool.query("UPDATE personal SET acceso_panel = 0 WHERE id_personal = ? AND rol <> 'administrador'", [req.params.id]);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ mensaje: e.message }); }
 });
