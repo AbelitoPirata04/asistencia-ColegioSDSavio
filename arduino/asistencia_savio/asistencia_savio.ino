@@ -779,7 +779,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);                 // sin ahorro de energía: responde más rápido
   WiFi.begin(WIFI_NOMBRE, WIFI_CLAVE);
-  WiFi.setTxPower(WIFI_POWER_15dBm);
+  WiFi.setTxPower(WIFI_POWER_19_5dBm);  // potencia máxima: llega mejor al router
   unsigned long t = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - t < 20000) {
     delay(300);
@@ -860,10 +860,11 @@ void loop() {
   // Reconexión WiFi
   if (WiFi.status() != WL_CONNECTED) {
     static unsigned long ultimoReintento = 0;
-    if (millis() - ultimoReintento > 15000) {
+    if (millis() - ultimoReintento > 6000) {
       ultimoReintento = millis();
       WiFi.disconnect();
       WiFi.begin(WIFI_NOMBRE, WIFI_CLAVE);
+      WiFi.setTxPower(WIFI_POWER_19_5dBm);
     }
   }
 
