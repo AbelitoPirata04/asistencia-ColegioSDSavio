@@ -401,14 +401,22 @@ void refrescarLcd() {
 
 String dosDigitos(int n) { return (n < 10 ? "0" : "") + String(n); }
 
-// Hora del reloj DS3231: se lee una vez por segundo y se descarta si llega dañada
+// Hora para la pantalla, una vez por segundo:
+// 1.º la hora de internet que guarda el propio ESP32 (no depende de cables)
+// 2.º si no hay hora de internet, el reloj DS3231 (se descarta si llega dañada)
 String horaActual() {
   static String hora = "--:--";
   static unsigned long ultimaLectura = 0;
   if (ultimaLectura == 0 || millis() - ultimaLectura >= 1000) {
     ultimaLectura = millis();
-    DateTime now = rtc.now();
-    if (now.hour() <= 23 && now.minute() <= 59) hora = dosDigitos(now.hour()) + ":" + dosDigitos(now.minute());
+    struct tm ti;
+    if (getLocalTime(&ti, 0) && ti.tm_year + 1900 >= 2025) {
+      hora = dosDigitos(ti.tm_hour) + ":" + dosDigitos(ti.tm_min);
+    } else {
+      DateTime now = rtc.now();
+      if (now.year() >= 2025 && now.year() < 2100 && now.hour() <= 23 && now.minute() <= 59)
+        hora = dosDigitos(now.hour()) + ":" + dosDigitos(now.minute());
+    }
   }
   return hora;
 }
@@ -797,9 +805,10 @@ void setup() {
 
   // Reloj: hora por internet y se guarda en el DS3231
   rtc.begin();
+  // Se pide siempre: si el WiFi llega después, el ESP32 toma la hora apenas se conecte
+  configTime(-18000, 0, "time.google.com", "pool.ntp.org");     // Colombia UTC-5
   if (WiFi.status() == WL_CONNECTED) {
     mostrar("Ajustando hora", "");
-    configTime(-18000, 0, "time.google.com", "pool.ntp.org");   // Colombia UTC-5
     struct tm ti;
     bool horaOK = false;
     for (int i = 0; i < 12 && !horaOK; i++) { horaOK = getLocalTime(&ti, 500); refrescarLcd(); }
