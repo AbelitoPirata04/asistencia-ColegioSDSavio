@@ -21,3 +21,6 @@ app-android/
 
 # Copias de la base de datos (datos personales: no se suben)
 respaldos/
+
+# Documentos de apoyo (guiones, diapositivas, capturas): solo locales
+documentos/
