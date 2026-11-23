@@ -2,6 +2,9 @@
 
 Sistema de control de asistencia biométrico y fotográfico para docentes y directivos.
 
+**Panel en línea:** [savio.143-110-198-171.sslip.io](https://savio.143-110-198-171.sslip.io)
+(desplegado en DigitalOcean; se entra con usuario y contraseña del encargado)
+
 Un equipo con **ESP32-S3** (sensor de huella R307, lector RFID RC522, cámara, pantalla LCD 16x2, reloj DS3231 y buzzer)
 registra la llegada y la salida de cada persona, le toma una foto y lo envía a un **panel web** donde el administrador
 gestiona al personal, revisa la asistencia y descarga reportes.
